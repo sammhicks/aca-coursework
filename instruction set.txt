@@ -1,3 +1,7 @@
+annotations:
+[r1, r2] - the operator is a Monoid, so the number of arguments is variable. [] = identity
+?r - this register is optional, and is treated as the identity if missing
+
 cond:
   1   true
   <   less than
@@ -6,17 +10,18 @@ cond:
 1 ?= _  -> true
 c ?= r  -> c == r
 
-add   r0 [r1, r2] i3   r0 = r1 + r2 + i3
-sub   r0 [r1, r2] i3   r0 = r1 - r2 - i3
-cmp   r0 r1 r2      r0 = cond
-cmpi  r0 r1 i2      r0 = cond
+add   r0 [r1, r2] i3    r0 = r1 + r2 + i3
+sub   r0 r1 ?r2 i3      r0 = r1 - r2 - i3
+mult  r0 [r1, r2] i3    r0 = r1 * r2 * i3
+cmp   r0 r1 r2          r0 = cond
+cmpi  r0 r1 i2          r0 = cond
 
-ld    r0 [r1, r2] i3   r0 = M[r1 + r2 + i3]
-st    r0 [r1, r2] i3   M[r1 + r2 + i3] = r0
+ld    r0 [r1, r2] i3    r0 = M[r1 + r2 + i3]
+st    r0 [r1, r2] i3    M[r1 + r2 + i3] = r0
 
-ldlr  r0            r0 = LR
+ldlr  r0                r0 = LR
 
-b     i0 cond r1    if cond ?= r1: PC = i0
-bl    i0 cond r1    if cond ?= r1: LR = PC + 1; PC = i0
-j     i0 cond r1    if cond ?= r1: PC = PC + i0
-ret   r0            PC = r0
+b     i0 cond r1        if cond ?= r1: PC = i0
+bl    i0 cond r1        if cond ?= r1: LR = PC + 1; PC = i0
+j     i0 cond r1        if cond ?= r1: PC = PC + i0
+ret   r0                PC = r0
