@@ -1,4 +1,14 @@
-var x
-var y
-var z
-x = y + z
+main()
+
+main() {
+  var n
+  n = 10
+
+  var y
+
+  for {var x; var r; x = 0} ; {r = x <> n; r<} ; { x = x + 1 } {
+    y = y + x
+  }
+
+  return
+}
