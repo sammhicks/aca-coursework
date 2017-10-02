@@ -1,0 +1,22 @@
+var items[4]
+
+for {var i = 0} ; {var atEnd = i <> 4; atEnd<} ; {i = i + 1} {
+  var value = 4
+  value = value - i
+  items[i] = value
+}
+
+var anyMoved = 1
+
+for {anyMoved>} {
+  anyMoved = 0
+  for {var i = 0} ; {var atEnd = i <> 3; atEnd<} ; {i = i + 1} {
+    var a = items[i]
+    var b = items[i + 1]
+    if {var cmp = a <> b; cmp>} {
+      anyMoved = 1
+      items[i+1] = a
+      items[i] = b
+    }
+  }
+}

@@ -1,9 +1,13 @@
 
 :- module(parser, [
-              script//1
-          ]).
+			  script//1
+		  ]).
 
 :- use_module(library(dcg/basics)).
+
+:- use_module(assignments).
+:- use_module(basics).
+:- use_module(identifiers).
 
 script(script(Instructions, Functions)) -->
 	empty_lines,
@@ -15,6 +19,10 @@ script(script(Instructions, Functions)) -->
 	eos.
 
 
+function_declarations([]) -->
+	eos,
+	!.
+
 function_declarations([F|Fs]) -->
 	function_declaration_with_eol(F),
 	!,
@@ -23,6 +31,10 @@ function_declarations([F|Fs]) -->
 function_declarations([]) -->
 	[].
 
+
+function_declarations_tail([]) -->
+	eos,
+	!.
 
 function_declarations_tail([F|Fs]) -->
 	empty_lines,
@@ -56,6 +68,10 @@ function_declaration(function(Name, Arguments, Returns, Body)) -->
 	"}".
 
 
+instructions([]) -->
+	eos,
+	!.
+
 instructions([Instruction|Instructions]) -->
 	instruction_with_eol(Instruction),
 	!,
@@ -64,6 +80,10 @@ instructions([Instruction|Instructions]) -->
 instructions([]) -->
 	[].
 
+
+instructions_tail([]) -->
+	eos,
+	!.
 
 instructions_tail([Instruction|Instructions]) -->
 	empty_lines,
@@ -85,44 +105,18 @@ instruction_with_eol(Instruction) -->
 instruction(noop) -->
 	"noop".
 
+instruction(Assignment) -->
+	assignment(Assignment).
+
+instruction(array(Name, Length)) -->
+	var_keyword,
+	whites,
+	array_with_index(Name, n(Length)).
+
 instruction(var(Name)) -->
-	"var",
-	white,
+	var_keyword,
 	whites,
 	variable(Name).
-
-instruction(var(Name, Size)) -->
-	"var",
-	white,
-	whites,
-	named_braced_integer(Name, Size).
-
-instruction(ass(R, A)) -->
-	variable(R),
-	whites_string_whites("="),
-	variable_or_number(A).
-
-instruction(add(R, A, B)) -->
-	binop("+", R, A, B).
-
-instruction(sub(R, A, B)) -->
-	binop("-", R, A, B).
-
-instruction(mult(R, A, B)) -->
-	binop("*", R, A, B).
-
-instruction(cmp(R, A, B)) -->
-	binop("<>", R, A, B).
-
-instruction(read(R, Array, Index)) -->
-	variable(R),
-	whites_string_whites("="),
-	named_braced_integer(Array, Index).
-
-instruction(write(R, Array, Index)) -->
-	named_braced_integer(Array, Index),
-	whites_string_whites("="),
-	variable(R).
 
 instruction(call(Function, Arguments, Returns)) -->
 	variable(Function),
@@ -150,7 +144,8 @@ instruction(if(Condition, Then)) -->
 	body(Then).
 
 instruction(for(Setup, Condition, Increment, Do)) -->
-	for_header,
+	for_keyword,
+	whites,
 	for_instructions(Setup),
 	whites_string_whites(";"),
 	condition(Condition),
@@ -160,18 +155,19 @@ instruction(for(Setup, Condition, Increment, Do)) -->
 	body(Do).
 
 instruction(for(Condition, Do)) -->
-	for_header,
+	for_keyword,
+	whites,
 	condition(Condition),
+	whites,
+	body(Do).
+
+instruction(for(Do)) -->
+	for_keyword,
 	whites,
 	body(Do).
 
 instruction(break) -->
 	"break".
-
-
-for_header -->
-	"for",
-	whites.
 
 
 condition(cond(Precondition, Variable, Comparison)) -->
@@ -265,127 +261,3 @@ returns([Variable]) -->
 
 returns([]) -->
 	[].
-
-
-empty_lines -->
-	empty_line,
-	!,
-	empty_lines.
-
-empty_lines -->
-	[].
-
-
-empty_line -->
-	whites,
-	eol.
-
-empty_line -->
-	whites,
-	"//",
-	string_without("\r\n", _),
-	eol.
-
-
-named_braced_integer(V, N) -->
-	variable(V),
-	whites,
-	braced_integer(N).
-
-
-braced_integer(N) -->
-	"[",
-	whites,
-	integer(N),
-	whites,
-	"]".
-
-
-binop(Op, R, A, B) -->
-	variable(R),
-	whites_string_whites("="),
-	variable_or_number(A),
-	whites_string_whites(Op),
-	variable_or_number(B).
-
-
-variable_or_number_list([Item|Items]) -->
-	variable_or_number(Item),
-	variable_or_number_tail(Items).
-
-variable_or_number_list([]) -->
-	[].
-
-
-variable_or_number_tail([Item|Items]) -->
-	whites_string_whites(","),
-	!,
-	variable_or_number(Item),
-	variable_or_number_tail(Items).
-
-variable_or_number_tail([]) -->
-	[].
-
-
-variable_list([V|Vs]) -->
-	variable(V),
-	variable_list_tail(Vs).
-
-variable_list([]) -->
-	[].
-
-
-variable_list_tail([]) -->
-	[].
-
-variable_list_tail([V|Vs]) -->
-	whites_string_whites(","),
-	variable(V),
-	variable_list_tail(Vs).
-
-
-variable_or_number(v(V)) -->
-	variable(V).
-
-variable_or_number(n(N)) -->
-	number(N).
-
-
-variable(Variable) -->
-	code_type(First, alpha),
-	codes_type(Other, alnum),
-	{
-	    string_codes(Variable, [First|Other])
-	}.
-
-
-whites_string_whites(String) -->
-	whites,
-	String,
-	whites.
-
-
-codes_type([Code|Codes], Type) -->
-	code_type(Code, Type),
-	codes_type(Codes, Type).
-
-codes_type([], _) -->
-	[].
-
-
-code_type(Code, Type) -->
-	[Code],
-	{
-	    char_type(Code, Type)
-	}.
-
-eol -->
-	"\r\n",
-	!.
-
-eol -->
-	"\r".
-
-eol -->
-	"\n".
-
