@@ -1,6 +1,9 @@
 
-var a = 16
-var b = 24
+var a = [1, 100)
+var b = [1, 100)
+
+out a
+out b
 
 for {var cmp = a<>b; cmp!=} {
   for {var cmp = a<>b; cmp>} {

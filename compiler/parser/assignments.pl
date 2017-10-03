@@ -42,6 +42,15 @@ rhs(mult(A, B)) -->
 rhs(cmp(A, B)) -->
 	binop("<>", A, B).
 
+rhs(rand(A, B)) -->
+	"[",
+	whites,
+	number(A),
+	whites_string_whites(","),
+	number(B),
+	whites,
+	")".
+
 rhs(array(A, I)) -->
 	array_with_index(A, I).
 

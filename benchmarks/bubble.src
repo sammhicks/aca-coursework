@@ -1,22 +1,33 @@
 var items[4]
 
+log Setup
+
 for {var i = 0} ; {var atEnd = i <> 4; atEnd<} ; {i = i + 1} {
-  var value = 4
-  value = value - i
-  items[i] = value
+  items[i] = [0,10)
 }
+
+log Bubble
 
 var anyMoved = 1
 
 for {anyMoved>} {
+  log Round
   anyMoved = 0
   for {var i = 0} ; {var atEnd = i <> 3; atEnd<} ; {i = i + 1} {
     var a = items[i]
     var b = items[i + 1]
     if {var cmp = a <> b; cmp>} {
+      log Moved
+      out i
+      out a
+      out b
       anyMoved = 1
       items[i+1] = a
       items[i] = b
     }
   }
+}
+
+for {var i = 0} ; {var atEnd = i <> 4; atEnd<} ; {i = i + 1} {
+  out items[i]
 }

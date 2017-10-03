@@ -125,6 +125,24 @@ instruction(call(Function, Arguments, Returns)) -->
 	whites_string_whites(")"),
 	returns(Returns).
 
+instruction(out(String)) -->
+	log_keyword,
+	whites,
+	string_without("\r\n", Codes),
+	{
+		string_codes(String, Codes)
+	}.
+
+instruction(outa(Array, Index)) -->
+	out_keyword,
+	whites,
+	array_with_index(Array, Index).
+
+instruction(outr(Register)) -->
+	out_keyword,
+	whites,
+	variable(Register).
+
 instruction(return) -->
 	"return".
 

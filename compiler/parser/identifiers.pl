@@ -7,7 +7,9 @@
 			  variable_or_number//1,
 			  variable//1,
 			  var_keyword//0,
-			  for_keyword//0
+			  for_keyword//0,
+			  out_keyword//0,
+			  log_keyword//0
 		  ]).
 
 :- use_module(library(dcg/basics)).
@@ -86,4 +88,12 @@ var_keyword -->
 
 for_keyword -->
 	"for",
+	white.
+
+out_keyword -->
+	"out",
+	white.
+
+log_keyword -->
+	"log",
 	white.

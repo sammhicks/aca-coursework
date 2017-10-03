@@ -1,6 +1,6 @@
 
-var a = 16
-var b = 24
+var a = [0, 100)
+var b = [0, 100)
 
 var r
 gcd(a, b) -> r

@@ -25,3 +25,6 @@ b     i0 inv cond r1    if inv ^ (cond ?= r1): PC = i0
 bl    i0 inv cond r1    if inv ^ (cond ?= r1): LR = PC + 1; PC = i0
 j     i0 inv cond r1    if inv ^ (cond ?= r1): PC = PC + i0
 ret   r0                PC = r0
+
+rand  r0 a1 b2          r0 = random value in [a1, b2)
+out   label r0          prints r0 with label to stdout
