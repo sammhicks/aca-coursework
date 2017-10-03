@@ -10,12 +10,13 @@ gcd(a, b) -> r {
   if {cmp=} {
     r = a
     return
-  }
-  if {cmp<} {
+  } else if {cmp<} {
     a = a - b
-  }
-  if {cmp>} {
+    gcd(a, b) -> r
+    return
+  } else {
     b = b - a
+    gcd(a, b) -> r
+    return
   }
-  gcd(a, b) -> r
 }

@@ -136,12 +136,8 @@ instruction(if(If, Then, Else)) -->
 	whites_string_whites("else"),
 	body(Else).
 
-instruction(if(Condition, Then)) -->
-	"if",
-	whites,
-	condition(Condition),
-	whites,
-	body(Then).
+instruction(If) -->
+	if(If).
 
 instruction(for(Setup, Condition, Increment, Do)) -->
 	for_keyword,
@@ -212,6 +208,34 @@ comparison(>) -->
 comparison(=) -->
 	"=",
 	!.
+
+
+if(if(Condition, Then, Else)) -->
+	"if",
+	whites,
+	condition(Condition),
+	whites,
+	body(Then),
+	else(Else).
+
+else(If) -->
+	whites,
+	"else",
+	white,
+	whites,
+	if(If),
+	!.
+
+else(Else) -->
+	whites,
+	"else",
+	white,
+	whites,
+	body(Else),
+	!.
+
+else([]) -->
+	[].
 
 
 precondition([Instruction|Instructions]) -->
