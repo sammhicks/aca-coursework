@@ -143,9 +143,6 @@ instruction(outr(Register)) -->
 	whites,
 	variable(Register).
 
-instruction(return) -->
-	"return".
-
 instruction(if(If, Then, Else)) -->
 	"if",
 	whites,
@@ -174,14 +171,6 @@ instruction(for(Condition, Do)) -->
 	condition(Condition),
 	whites,
 	body(Do).
-
-instruction(for(Do)) -->
-	for_keyword,
-	whites,
-	body(Do).
-
-instruction(break) -->
-	"break".
 
 
 condition(cond(Precondition, Variable, Comparison)) -->

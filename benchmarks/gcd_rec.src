@@ -9,14 +9,11 @@ gcd(a, b) -> r {
   var cmp = a<>b
   if {cmp=} {
     r = a
-    return
   } else if {cmp<} {
     a = a - b
     gcd(a, b) -> r
-    return
   } else {
     b = b - a
     gcd(a, b) -> r
-    return
   }
 }
