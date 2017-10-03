@@ -21,7 +21,7 @@ st    r0 [r1, r2] i3    M[r1 + r2 + i3] = r0
 
 ldlr  r0                r0 = LR
 
-b     i0 cond r1        if cond ?= r1: PC = i0
-bl    i0 cond r1        if cond ?= r1: LR = PC + 1; PC = i0
-j     i0 cond r1        if cond ?= r1: PC = PC + i0
+b     i0 inv cond r1    if inv ^ (cond ?= r1): PC = i0
+bl    i0 inv cond r1    if inv ^ (cond ?= r1): LR = PC + 1; PC = i0
+j     i0 inv cond r1    if inv ^ (cond ?= r1): PC = PC + i0
 ret   r0                PC = r0

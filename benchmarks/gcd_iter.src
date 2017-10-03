@@ -1,0 +1,12 @@
+
+var a = 16
+var b = 24
+
+for {var cmp = a<>b; cmp!=} {
+  for {var cmp = a<>b; cmp>} {
+    a = a - b
+  }
+  for {var cmp = a<>b; cmp<} {
+    b = b - a
+  }
+}

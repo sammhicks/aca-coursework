@@ -1,0 +1,21 @@
+
+var a = 16
+var b = 24
+
+var r
+gcd(a, b) -> r
+
+gcd(a, b) -> r {
+  var cmp = a<>b
+  if {cmp=} {
+    r = a
+    return
+  }
+  if {cmp<} {
+    a = a - b
+  }
+  if {cmp>} {
+    b = b - a
+  }
+  gcd(a, b) -> r
+}

@@ -189,6 +189,18 @@ variable_comparision(Variable, Comparison) -->
 	comparison(Comparison).
 
 
+comparison(<=) -->
+	"<=",
+	!.
+
+comparison(>=) -->
+	">=",
+	!.
+
+comparison(<>) -->
+	"!=",
+	!.
+
 comparison(<) -->
 	"<",
 	!.
