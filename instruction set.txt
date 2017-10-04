@@ -27,4 +27,5 @@ j     i0 inv cond r1    if inv ^ (cond ?= r1): PC = PC + i0
 ret   r0                PC = r0
 
 rand  r0 a1 b2          r0 = random value in [a1, b2)
+log   message           prints message to stdout
 out   label r0          prints r0 with label to stdout
