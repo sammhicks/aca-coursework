@@ -1,13 +1,8 @@
-main()
 
-main() {
-  var n = 10
-
-  var y = 0
-
-  for {var x = 0} ; {var r = x <> n; r<} ; {x = x + 1} {
-    y = y + x
-  }
-
-  return
-}
+var a[12]
+var b = 10
+var c = 12
+var d = 123
+a[2] = b
+a[6] = c - b
+a[b] = a[1]

@@ -1,18 +1,22 @@
 
 :- module(state, [
 			  init_state//0,
+			  finish//0,
 			  lookup_state//1,
 			  restore_state//1,
 			  add_variables//1,
 			  lookup_variables//2,
 			  temp_variable//1,
 			  lookup_functions//2,
-			  update_stack_size//1,
+			  get_frame_size//1,
+			  set_frame_size//1,
+			  increment_frame_size//1,
+			  add_instructions//1,
 			  is//2
 		  ]).
 
-state(state(Variables, Functions, Stack_Size),
-	  Variables, Functions, Stack_Size).
+state(state(Variables, Functions, Frame_Size),
+	  Variables, Functions, Frame_Size).
 
 
 init_state(Tail, [State|Tail]) :-
@@ -23,6 +27,9 @@ init_state(State) :-
 	state(State, [sr, lr], [], 0).
 
 
+finish([_], []).
+
+
 lookup_state(State, [State|Tail], [State|Tail]).
 
 
@@ -30,9 +37,9 @@ restore_state(State, [_|Tail], [State|Tail]).
 
 
 add_variables(Variables, [Old_State|Tail], [New_State|Tail]) :-
-	state(Old_State, Old_Variables, Functions, Stack_Size),
+	state(Old_State, Old_Variables, Functions, Frame_Size),
 	append(Old_Variables, Variables, New_Variables),
-	state(New_State, New_Variables, Functions, Stack_Size).
+	state(New_State, New_Variables, Functions, Frame_Size).
 
 
 
@@ -74,6 +81,24 @@ lookup_functions([F|Fs], [A|As], All_Functions) :-
 
 lookup_function(Function, Address, Functions) :-
 	member(Function-Address, Functions).
+
+
+get_frame_size(Size, [State|Tail], [State|Tail]) :-
+	state(State, _, _, Size).
+
+set_frame_size(Size, [Old_State|Tail], [New_State|Tail]) :-
+	state(Old_State, Variables, Functions, _),
+	state(New_State, Variables, Functions, Size).
+
+increment_frame_size(Increment, [Old_State|Tail], [New_State|Tail]) :-
+	state(Old_State, Variables, Functions, Old_Size),
+	New_Size is Old_Size + Increment,
+	state(New_State, Variables, Functions, New_Size).
+
+
+add_instructions(Instructions), [State] -->
+	[State],
+	Instructions.
 
 
 is(A, B, State, State) :-
