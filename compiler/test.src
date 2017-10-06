@@ -1,7 +1,12 @@
 
-var c = 0
-for {var i = 0} ; {var cmp = i <> 10; cmp<} ; {i = i + 1} {
-  log Loop
-  c = c + i
+var a = 0
+var b = 1
+if {var cmp = a<>b; cmp<} {
+  log If
+  out a
+} else if {cmp>} {
+  log ElseIf
+  out b
+} else {
+  log Else
 }
-log Done
