@@ -51,6 +51,9 @@ compile_instruction(array(Name, Length)) -->
 	add_instructions([add(Array, [sr], Array_Start)]).
 
 compile_instruction(assignment(var(V0), v(V1))) -->
+	lookup_variables([V0, V1], [R, R]).
+
+compile_instruction(assignment(var(V0), v(V1))) -->
 	lookup_variables([V0, V1], [R0, R1]),
 	add_instructions([add(R0, [R1], 0)]).
 
