@@ -11,8 +11,17 @@ compile_script(Script, Out) :-
 compile_script(script(Instructions, Functions)) -->
 	init_state,
 	compile_instructions(Instructions),
-	compile_functions(Functions),
+	%compile_functions(Functions),
 	finish.
+
+compile_instructions(Instructions, Block_Length) -->
+	lookup_state(State),
+	{
+		compile_instructions(Instructions, [State|Operations], [End_State]),
+		length(Operations, Block_Length)
+	},
+	restore_state(End_State),
+	add_instructions(Operations).
 
 
 compile_instructions([]) -->
@@ -141,6 +150,71 @@ compile_instruction(assignment(array(A, I), RHS)) -->
 	temp_variable(Temp),
 	compile_instruction(assignment(var(Temp), RHS)),
 	compile_instruction(assignment(array(A, I), v(Temp))).
+
+compile_instruction(outs(String)) -->
+	add_instructions([log(String)]).
+
+compile_instruction(outv(V)) -->
+	lookup_variables([V], [R]),
+	add_instructions([out(V, R)]).
+
+compile_instruction(if(cond(Precondition, Variable, Comparison), Then, noop)) -->
+	lookup_state(Saved_State),
+	compile_instructions(Precondition),
+	lookup_variables([Variable], [Register]),
+	compile_comparison(Comparison, true, InvFlag, CondFlag),
+	add_instructions([j(Body_Length, InvFlag, CondFlag, Register)]),
+	compile_instructions(Then, Body_Length),
+	restore_state(Saved_State).
+
+compile_instruction(if(cond(Precondition, Variable, Comparison), Then, Else)) -->
+	lookup_state(Saved_State),
+	compile_instructions(Precondition),
+	lookup_variables([Variable], [Register]),
+	compile_comparison(Comparison, false, InvFlag, CondFlag),
+	add_instructions([j(Else_Jump_Size, InvFlag, CondFlag, Register)]),
+	lookup_state(After_Comparison_State),
+	compile_instructions(Else, Else_Size),
+	add_instructions([j(Then_Jump_Size, false, "1", -1)]),
+	Else_Jump_Size is Else_Size + 2,
+	restore_state(After_Comparison_State),
+	compile_instructions(Then, Then_Size),
+	Then_Jump_Size is Then_Size + 1,
+	restore_state(Saved_State).
+
+compile_instruction(for(Setup, Condition, Increment, Do)) -->
+	lookup_state(Saved_State),
+	compile_instructions(Setup),
+	{
+		append(Do, Increment, Do_Increment)
+	},
+	compile_instruction(for(Condition, Do_Increment)),
+	restore_state(Saved_State).
+
+compile_instruction(for(cond(Precondition, Variable, Comparison), Do)) -->
+	lookup_state(Saved_State),
+	compile_instructions(Precondition, Precondition_Size),
+	lookup_variables([Variable], [Register]),
+	compile_comparison(Comparison, true, InvFlag, CondFlag),
+	add_instructions([j(Do_Jump_Size, InvFlag, CondFlag, Register)]),
+	compile_instructions(Do, Do_Size),
+	add_instructions([j(Loop_Jump_Size, false, "1", -1)]),
+	Do_Jump_Size is Do_Size + 2,
+	Loop_Jump_Size is -(Precondition_Size + Do_Size + 1),
+	restore_state(Saved_State).
+
+
+compile_comparison(Comparison, Invert, InvFlag, CondFlag, State, State) :-
+	comparison_flags(Comparison, RawInvFlag, CondFlag),
+	xor(RawInvFlag, Invert, InvFlag).
+
+
+comparison_flags(<,  false,	"<").
+comparison_flags(=,  false,	"0").
+comparison_flags(>,  false,	">").
+comparison_flags(<=, true,  ">").
+comparison_flags(<>, true,	"0").
+comparison_flags(>=, true,	"<").
 
 
 compile_functions([]), [State] -->

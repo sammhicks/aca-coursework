@@ -1,8 +1,7 @@
 
-var a[12]
-var b = 10
-var c = 12
-var d = 123
-a[2] = b
-a[6] = c - b
-a[b] = a[1]
+var c = 0
+for {var i = 0} ; {var cmp = i <> 10; cmp<} ; {i = i + 1} {
+  log Loop
+  c = c + i
+}
+log Done

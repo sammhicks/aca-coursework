@@ -125,7 +125,7 @@ instruction(call(Function, Arguments, Returns)) -->
 	whites_string_whites(")"),
 	returns(Returns).
 
-instruction(out(String)) -->
+instruction(outs(String)) -->
 	log_keyword,
 	whites,
 	string_without("\r\n", Codes),
@@ -133,23 +133,10 @@ instruction(out(String)) -->
 		string_codes(String, Codes)
 	}.
 
-instruction(outa(Array, Index)) -->
+instruction(outv(Variable)) -->
 	out_keyword,
 	whites,
-	array_with_index(Array, Index).
-
-instruction(outr(Register)) -->
-	out_keyword,
-	whites,
-	variable(Register).
-
-instruction(if(If, Then, Else)) -->
-	"if",
-	whites,
-	variable(If),
-	body(Then),
-	whites_string_whites("else"),
-	body(Else).
+	variable(Variable).
 
 instruction(If) -->
 	if(If).
@@ -225,7 +212,8 @@ if(if(Condition, Then, Else)) -->
 	body(Then),
 	else(Else).
 
-else(If) -->
+
+else([If]) -->
 	whites,
 	"else",
 	white,
@@ -241,14 +229,13 @@ else(Else) -->
 	body(Else),
 	!.
 
-else([]) -->
+else(noop) -->
 	[].
 
 
 precondition([Instruction|Instructions]) -->
 	instruction(Instruction),
-	whites,
-	";",
+	whites_string_whites(";"),
 	!,
 	precondition(Instructions).
 

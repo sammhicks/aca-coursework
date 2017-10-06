@@ -12,7 +12,8 @@
 			  set_frame_size//1,
 			  increment_frame_size//1,
 			  add_instructions//1,
-			  is//2
+			  is//2,
+			  xor/3
 		  ]).
 
 state(state(Variables, Functions, Frame_Size),
@@ -28,7 +29,6 @@ init_state(State) :-
 
 
 finish([_], []).
-
 
 lookup_state(State, [State|Tail], [State|Tail]).
 
@@ -103,3 +103,8 @@ add_instructions(Instructions), [State] -->
 
 is(A, B, State, State) :-
 	A is B.
+
+xor(false, false, false).
+xor( true, false,  true).
+xor(false,  true,  true).
+xor( true,  true, false).
