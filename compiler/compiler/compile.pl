@@ -8,11 +8,14 @@
 compile_script(Script, Out) :-
 	compile_script(Script, Out, []).
 
+
 compile_script(script(Instructions, Functions)) -->
-	init_state,
-	compile_instructions(Instructions),
-	%compile_functions(Functions),
+	start(Functions),
+	init_state(Functions, none),
+	compile_instructions(Instructions, PC),
+	compile_functions(Functions, PC),
 	finish.
+
 
 compile_instructions(Instructions, Block_Length) -->
 	lookup_state(State),
@@ -52,6 +55,15 @@ compile_instruction(array(Name, Length)) -->
 
 compile_instruction(assignment(var(V0), v(V1))) -->
 	lookup_variables([V0, V1], [R, R]).
+
+compile_instruction(assignment(var(V0), add(var(V0), n(0)))) -->
+	[].
+
+compile_instruction(assignment(var(V0), add(n(0), var(V0)))) -->
+	[].
+
+compile_instruction(assignment(var(V0), sub(var(V0), n(0)))) -->
+	[].
 
 compile_instruction(assignment(var(V0), v(V1))) -->
 	lookup_variables([V0, V1], [R0, R1]),
@@ -220,9 +232,76 @@ comparison_flags(<>, true,	"0").
 comparison_flags(>=, true,	"<").
 
 
-compile_functions([]), [State] -->
-	[State].
+compile_functions(Functions, PC) -->
+	compile_functions(Functions, Functions, PC).
 
-% compile_functions([F|Fs]) -->
-%	compile_function(F),
-%	compile_functions(Fs).
+
+compile_functions(_Functions, [], _PC) -->
+	[].
+
+compile_functions(All_Functions, [F|Fs], PC) -->
+	compile_function(All_Functions, F, PC, New_PC),
+	compile_functions(All_Functions, Fs, New_PC).
+
+
+compile_function(Functions, function(Name, Returns, Arguments, Body), PC, New_PC) -->
+	lookup_function(Name, PC),
+	init_state(Functions, function(Name, Returns, Arguments, Body)),
+	lookup_state(State),
+	{
+		compile_instructions(Body, [State|Operations], [End_State]),
+		register_writes(Operations, Writes)
+	},
+	restore_state(End_State),
+	add_instructions(Operations).
+
+
+register_writes([], Writes, Writes).
+
+register_writes([Op|Ops], Current, Final) :-
+	register_writes(Op, Op_Writes),
+	union(Op_Writes, Current, New),
+	register_writes(Ops, New, Final).
+
+
+register_writes(add(R, _, _), [R]).
+register_writes(sub(R, _, _), [R]).
+register_writes(mult(R, _, _), [R]).
+register_writes(cmp(R, _, _), [R]).
+register_writes(cmpi(R, _, _), [R]).
+register_writes(ld(R, _, _), [R]).
+register_writes(st(_, _, _), []).
+register_writes(ldlr(R), [R]).
+register_writes(b(_, _, _, _), []).
+register_writes(bl(_, _, _, _), [lr]).
+register_writes(j(_, _, _, _), []).
+register_writes(ret(_), []).
+register_writes(rand(R, _, _), [R]).
+register_writes(log(_), []).
+register_writes(out(_, _), []).
+
+
+save_registers([]) -->
+	[].
+
+save_registers([R|Rs]) -->
+	save_register(R),
+	!,
+	save_registers(Rs).
+
+save_register(R) -->
+	lookup_variables(V, R),
+	{
+		volatile_variable(V)
+	}.
+
+save_register(R) -->
+	get_frame_size(Index),
+	compile_instruction(assignment(array(sr, Index), v(r(R)))),
+	increment_frame_size(1).
+
+
+volatile_variable(sr).
+volatile_variable(return(_)).
+volatile_variable(argument(_)).
+

@@ -54,7 +54,7 @@ function_declaration_with_eol(Function) -->
 	!.
 
 
-function_declaration(function(Name, Arguments, Returns, Body)) -->
+function_declaration(function(Name, Returns, Arguments, Body)) -->
 	variable(Name),
 	whites_string_whites("("),
 	variable_list(Arguments),
