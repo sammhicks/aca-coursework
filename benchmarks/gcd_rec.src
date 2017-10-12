@@ -1,0 +1,20 @@
+
+var a = [0, 100)
+var b = [0, 100)
+
+var r
+gcd(a, b) -> r
+out r
+
+gcd(a, b) -> r {
+  var cmp = a<>b
+  if {cmp=} {
+    r = a
+  } else if {cmp<} {
+    a = a - b
+    gcd(a, b) -> r
+  } else {
+    b = b - a
+    gcd(a, b) -> r
+  }
+}
