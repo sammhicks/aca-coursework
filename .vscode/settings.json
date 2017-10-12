@@ -1,7 +1,7 @@
 {
   "editor.tabSize": 2,
   "editor.detectIndentation": true,
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true
 }

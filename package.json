@@ -1,0 +1,23 @@
+{
+  "name": "aca-coursework",
+  "version": "1.0.0",
+  "description": "My COMSM0109 coursework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sammhicks/aca-coursework.git"
+  },
+  "author": "Samuel Hicks",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/sammhicks/aca-coursework/issues"
+  },
+  "homepage": "https://github.com/sammhicks/aca-coursework#readme",
+  "dependencies": {
+    "@types/node": "^8.0.31",
+    "typescript": "^2.5.3"
+  }
+}
