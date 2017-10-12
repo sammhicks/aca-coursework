@@ -12,7 +12,10 @@
 script(script(Instructions, Functions)) -->
 	empty_lines,
 	whites,
-	instructions(Instructions),
+	instructions(Main),
+	{
+		append(Main, [halt], Instructions)
+	},
 	empty_lines,
 	function_declarations(Functions),
 	empty_lines,

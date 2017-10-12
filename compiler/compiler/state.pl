@@ -46,7 +46,7 @@ state_variables(Functions, Function, Variables) :-
 
 allocate_functions_returns(Functions, Variables) :-
 	maplist(function_returns_count, Functions, Counts),
-	max_list(Counts, Count),
+	max_list([0|Counts], Count),
 	length(Variables, Count).
 
 
@@ -56,7 +56,7 @@ function_returns_count(function(_Name, Returns, _Arguments, _Body), Count) :-
 
 allocate_functions_arguments(Functions, Variables) :-
 	maplist(function_arguments_count, Functions, Counts),
-	max_list(Counts, Count),
+	max_list([0|Counts], Count),
 	length(Variables, Count).
 
 

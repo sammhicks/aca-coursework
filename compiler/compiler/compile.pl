@@ -41,6 +41,9 @@ compile_instructions([I|Is]) -->
 compile_instruction(noop) -->
 	add_instructions([noop]).
 
+compile_instruction(halt) -->
+	add_instructions([halt]).
+
 compile_instruction(var(V)) -->
 	add_variables([V]).
 
@@ -50,10 +53,9 @@ compile_instruction(var(V, Init)) -->
 
 compile_instruction(array(Name, Length)) -->
 	add_variables([Name]),
-	lookup_variables([Name], [Array]),
 	get_frame_size(Array_Start),
 	increment_frame_size(Length),
-	add_instructions([add(Array, [sr], Array_Start)]).
+	compile_instructions([assignment(var(Name), add(v(sr), n(Array_Start)))]).
 
 compile_instruction(assignment(var(V0), v(V1))) -->
 	lookup_variables([V0, V1], [R, R]).

@@ -6,8 +6,6 @@ cond:
   <   less than
   =   equals
   >   greater than
-1 ?= _  -> true
-c ?= r  -> c == r
 
 add   r0 [r1, r2] i3    r0 = r1 + r2 + i3
 sub   r0 r1 ?r2 i3      r0 = r1 - r2 - i3
@@ -20,10 +18,14 @@ st    r0 [r1, r2] i3    M[r1 + r2 + i3] = r0
 
 b     i0                LR = PC + 1; PC = i0
 j     i0                PC = PC + i0
-cj    i0 inv cond r1    if inv ^ (cond ?= r1): PC = PC + i0
+cj    i0 inv cond r1    if inv ^ (cond == r1): PC = PC + i0
 
 ret                     PC = LR
 
 rand  r0 a1 b2          r0 = random value in [a1, b2)
+
 log   message           prints message to stdout
 out   label r0          prints r0 with label to stdout
+
+noop
+halt

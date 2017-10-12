@@ -29,5 +29,6 @@ for {anyMoved>} {
 }
 
 for {var i = 0} ; {var atEnd = i <> 4; atEnd<} ; {i = i + 1} {
-  out items[i]
+  var item = items[i]
+  out item
 }
