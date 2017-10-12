@@ -77,7 +77,7 @@ variable_or_number(n(N)) -->
 
 variable(Variable) -->
 	code_type(First, alpha),
-	codes_type(Other, alnum),
+	codes_type(Other, csym),
 	{
 	    string_codes(Variable, [First|Other])
 	}.

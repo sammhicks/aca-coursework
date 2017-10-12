@@ -51,7 +51,7 @@ opcode(ret, op{name:"ret"}).
 opcode(rand(R0, A1, B2), op{name:"rand", r0:R0, a1:A1, b2:B2}).
 
 opcode(log(Message), op{name:"log", message:Message}).
-opcode(out(Label, R0), op{name:"label", label:Label, r0:R0}).
+opcode(out(Label, R0), op{name:"out", label:Label, r0:R0}).
 
 opcode(noop, op{name:"noop"}).
 opcode(halt, op{name:"halt"}).

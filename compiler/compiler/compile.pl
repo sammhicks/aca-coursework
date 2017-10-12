@@ -66,6 +66,12 @@ compile_instruction(assignment(var(V0), add(v(V0), n(0)))) -->
 compile_instruction(assignment(var(V0), add(n(0), v(V0)))) -->
 	[].
 
+compile_instruction(assignment(var(V0), mult(v(V0), n(1)))) -->
+	[].
+
+compile_instruction(assignment(var(V0), mult(n(1), v(V0)))) -->
+	[].
+
 compile_instruction(assignment(var(V0), sub(v(V0), n(0)))) -->
 	[].
 
@@ -123,22 +129,22 @@ compile_instruction(assignment(var(V0), sub(n(N1), v(V2)))) -->
 	compile_instruction(assignment(var(V0), n(N1))),
 	compile_instruction(assignment(var(V0), sub(v(V0), v(V2)))).
 
-compile_instruction(assignment(var(V0), mul(v(V1), v(V2)))) -->
+compile_instruction(assignment(var(V0), mult(v(V1), v(V2)))) -->
 	lookup_variables([V0, V1, V2], [R0, R1, R2]),
-	add_instructions([mul(R0, [R1, R2], 0)]).
+	add_instructions([mult(R0, [R1, R2], 1)]).
 
-compile_instruction(assignment(var(V0), mul(v(V1), n(N2)))) -->
+compile_instruction(assignment(var(V0), mult(v(V1), n(N2)))) -->
 	lookup_variables([V0, V1], [R0, R1]),
-	add_instructions([mul(R0, [R1], N2)]).
+	add_instructions([mult(R0, [R1], N2)]).
 
-compile_instruction(assignment(var(V0), mul(n(N1), v(V2)))) -->
+compile_instruction(assignment(var(V0), mult(n(N1), v(V2)))) -->
 	lookup_variables([V0, V2], [R0, R2]),
-	add_instructions([mul(R0, [R2], N1)]).
+	add_instructions([mult(R0, [R2], N1)]).
 
-compile_instruction(assignment(var(V0), mul(n(N1), n(N2)))) -->
+compile_instruction(assignment(var(V0), mult(n(N1), n(N2)))) -->
 	lookup_variables([V0], [R0]),
 	N3 is N1 * N2,
-	add_instructions([mul(R0, [], N3)]).
+	add_instructions([mult(R0, [], N3)]).
 
 compile_instruction(assignment(var(V0), cmp(v(V1), v(V2)))) -->
 	lookup_variables([V0, V1, V2], [R0, R1,	R2]),
