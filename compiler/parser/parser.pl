@@ -118,7 +118,7 @@ instruction(var(Name)) -->
 	whites,
 	variable(Name).
 
-instruction(call(Function, Arguments, Returns)) -->
+instruction(call(Function, Returns, Arguments)) -->
 	variable(Function),
 	whites_string_whites("("),
 	variable_or_number_list(Arguments),

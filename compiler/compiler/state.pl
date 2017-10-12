@@ -41,7 +41,7 @@ state_variables(Functions, Function, Variables) :-
 	allocate_functions_returns(Functions, Returns_Variables),
 	allocate_functions_arguments(Functions, Arguments_Variables),
 	function_variables(Function, Returns_Variables, Arguments_Variables),
-	append([[sr, lr], Returns_Variables, Arguments_Variables], Variables).
+	append([[lr, sr], Returns_Variables, Arguments_Variables], Variables).
 
 
 allocate_functions_returns(Functions, Variables) :-
@@ -118,7 +118,6 @@ lookup_variables([], [], _).
 
 lookup_variables([V|Vs], [R|Rs], All_Variables) :-
 	lookup_variable(V, R, All_Variables),
-	!,
 	lookup_variables(Vs, Rs, All_Variables).
 
 
@@ -130,7 +129,8 @@ lookup_variable(Variable, Register, Variables) :-
 	member(Variable, Variable_Names).
 
 lookup_variable(Variable, Register, Variables) :-
-	nth0(Register, Variables, Variable).
+	nth0(Register, Variables, Variable),
+	\+ is_list(Variable).
 
 
 temp_variable(r(Register), [State|Tail], [State|Tail]) :-
@@ -139,7 +139,7 @@ temp_variable(r(Register), [State|Tail], [State|Tail]) :-
 
 
 lookup_function(Function, Address, [State|Tail], [State|Tail]) :-
-	state(State, Functions, _, _),
+	state(State, _, Functions, _),
 	lookup_function(Function, Address, Functions).
 
 

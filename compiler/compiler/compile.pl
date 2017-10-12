@@ -4,6 +4,7 @@
 		  ]).
 
 :- use_module(state).
+:- use_module(util).
 
 compile_script(Script, Out) :-
 	compile_script(Script, Out, []).
@@ -14,6 +15,7 @@ compile_script(script(Instructions, Functions)) -->
 	init_state(Functions, none),
 	compile_instructions(Instructions, PC),
 	compile_functions(Functions, PC),
+	!,
 	finish.
 
 
@@ -56,13 +58,13 @@ compile_instruction(array(Name, Length)) -->
 compile_instruction(assignment(var(V0), v(V1))) -->
 	lookup_variables([V0, V1], [R, R]).
 
-compile_instruction(assignment(var(V0), add(var(V0), n(0)))) -->
+compile_instruction(assignment(var(V0), add(v(V0), n(0)))) -->
 	[].
 
-compile_instruction(assignment(var(V0), add(n(0), var(V0)))) -->
+compile_instruction(assignment(var(V0), add(n(0), v(V0)))) -->
 	[].
 
-compile_instruction(assignment(var(V0), sub(var(V0), n(0)))) -->
+compile_instruction(assignment(var(V0), sub(v(V0), n(0)))) -->
 	[].
 
 compile_instruction(assignment(var(V0), v(V1))) -->
@@ -104,11 +106,11 @@ compile_instruction(assignment(var(V0), add(n(N1), n(N2)))) -->
 
 compile_instruction(assignment(var(V0), sub(v(V1), v(V2)))) -->
 	lookup_variables([V0, V1, V2], [R0, R1, R2]),
-	add_instructions([sub(R0, [R1, R2], 0)]).
+	add_instructions([sub(R0, R1, R2, 0)]).
 
 compile_instruction(assignment(var(V0), sub(v(V1), n(N2)))) -->
 	lookup_variables([V0, V1], [R0, R1]),
-	add_instructions([sub(R0, [R1], N2)]).
+	add_instructions([sub(R0, R1, null, N2)]).
 
 compile_instruction(assignment(var(V0), sub(n(N1), v(V0)))) -->
 	temp_variable(Temp),
@@ -148,7 +150,6 @@ compile_instruction(assignment(var(V0), rand(Min, Max))) -->
 	lookup_variables([V0], [R0]),
 	add_instructions([rand(R0, Min, Max)]).
 
-
 compile_instruction(assignment(array(V1, V2 + N3), v(V0))) -->
 	lookup_variables([V0, V1, V2], [R0, R1, R2]),
 	add_instructions([st(R0, [R1, R2], N3)]).
@@ -178,7 +179,7 @@ compile_instruction(if(cond(Precondition, Variable, Comparison), Then, noop)) --
 	compile_instructions(Precondition),
 	lookup_variables([Variable], [Register]),
 	compile_comparison(Comparison, true, InvFlag, CondFlag),
-	add_instructions([j(Body_Length, InvFlag, CondFlag, Register)]),
+	add_instructions([cj(Body_Length, InvFlag, CondFlag, Register)]),
 	compile_instructions(Then, Body_Length),
 	restore_state(Saved_State).
 
@@ -187,10 +188,10 @@ compile_instruction(if(cond(Precondition, Variable, Comparison), Then, Else)) --
 	compile_instructions(Precondition),
 	lookup_variables([Variable], [Register]),
 	compile_comparison(Comparison, false, InvFlag, CondFlag),
-	add_instructions([j(Else_Jump_Size, InvFlag, CondFlag, Register)]),
+	add_instructions([cj(Else_Jump_Size, InvFlag, CondFlag, Register)]),
 	lookup_state(After_Comparison_State),
 	compile_instructions(Else, Else_Size),
-	add_instructions([j(Then_Jump_Size, false, "1", -1)]),
+	add_instructions([j(Then_Jump_Size)]),
 	Else_Jump_Size is Else_Size + 2,
 	restore_state(After_Comparison_State),
 	compile_instructions(Then, Then_Size),
@@ -211,12 +212,26 @@ compile_instruction(for(cond(Precondition, Variable, Comparison), Do)) -->
 	compile_instructions(Precondition, Precondition_Size),
 	lookup_variables([Variable], [Register]),
 	compile_comparison(Comparison, true, InvFlag, CondFlag),
-	add_instructions([j(Do_Jump_Size, InvFlag, CondFlag, Register)]),
+	add_instructions([cj(Do_Jump_Size, InvFlag, CondFlag, Register)]),
 	compile_instructions(Do, Do_Size),
-	add_instructions([j(Loop_Jump_Size, false, "1", -1)]),
+	add_instructions([j(Loop_Jump_Size)]),
 	Do_Jump_Size is Do_Size + 2,
 	Loop_Jump_Size is -(Precondition_Size + Do_Size + 1),
 	restore_state(Saved_State).
+
+compile_instruction(call(Function, Returns, Arguments)) -->
+	compile_move_arguments(Arguments, 0),
+	lookup_function(Function, Target),
+	get_frame_size(Frame_Size),
+	compile_instruction(assignment(var(sr), add(v(sr), n(Frame_Size)))),
+	add_instructions([b(Target)]),
+	compile_instruction(assignment(var(sr), sub(v(sr), n(Frame_Size)))),
+	compile_move_returns(Returns, 0).
+
+compile_instruction(I, State, State) :-
+	format("Cannot compile instruction: ~q\n", [I]),
+	!,
+	fail.
 
 
 compile_comparison(Comparison, Invert, InvFlag, CondFlag, State, State) :-
@@ -232,6 +247,36 @@ comparison_flags(<>, true,	"0").
 comparison_flags(>=, true,	"<").
 
 
+compile_move_arguments([], _Index) -->
+	[].
+
+compile_move_arguments([Arg|Args], Index) -->
+	compile_move_argument(Arg, Index),
+	{
+		Next_Index is Index + 1
+	},
+	compile_move_arguments(Args, Next_Index).
+
+
+compile_move_argument(Arg, Index) -->
+	compile_instruction(assignment(var(r(Index)), Arg)).
+
+
+compile_move_returns([], _Index) -->
+	[].
+
+compile_move_returns([Return|Returns], Index) -->
+	compile_move_return(Return, Index),
+	{
+		Next_Index is Index + 1
+	},
+	compile_move_returns(Returns, Next_Index).
+
+
+compile_move_return(Arg, Index) -->
+	compile_instruction(assignment(var(Arg), v(r(Index)))).
+
+
 compile_functions(Functions, PC) -->
 	compile_functions(Functions, Functions, PC).
 
@@ -241,6 +286,7 @@ compile_functions(_Functions, [], _PC) -->
 
 compile_functions(All_Functions, [F|Fs], PC) -->
 	compile_function(All_Functions, F, PC, New_PC),
+	!,
 	compile_functions(All_Functions, Fs, New_PC).
 
 
@@ -249,10 +295,26 @@ compile_function(Functions, function(Name, Returns, Arguments, Body), PC, New_PC
 	init_state(Functions, function(Name, Returns, Arguments, Body)),
 	lookup_state(State),
 	{
-		compile_instructions(Body, [State|Operations], [End_State]),
-		register_writes(Operations, Writes)
+		compile_instructions(Body, [State|Body_Operations], [_]),
+		register_writes(Body_Operations, [], Writes),
+		lookup_variables(Writes, Register_Writes, [State], [State]),
+		sort(Register_Writes, Sorted_Register_Writes),
+		save_registers(Sorted_Register_Writes, [State|Save_Operations], [New_State]),
+		get_frame_size(Frame_Size, [New_State], [New_State]),
+		compile_instruction(assignment(var(sr), add(v(sr), n(Frame_Size))), [New_State|Push_Operations], [New_State]),
+		compile_instruction(assignment(var(sr), sub(v(sr), n(Frame_Size))), [New_State|Pop_Operations], [New_State]),
+		restore_registers(Sorted_Register_Writes, [New_State|Restore_Operations], [_]),
+		append([
+			Save_Operations,
+			Push_Operations,
+			Body_Operations,
+			Pop_Operations,
+			Restore_Operations,
+			[ret]
+		], Operations),
+		length(Operations, Operations_Count),
+		New_PC is PC + Operations_Count
 	},
-	restore_state(End_State),
 	add_instructions(Operations).
 
 
@@ -264,19 +326,18 @@ register_writes([Op|Ops], Current, Final) :-
 	register_writes(Ops, New, Final).
 
 
-register_writes(add(R, _, _), [R]).
-register_writes(sub(R, _, _), [R]).
-register_writes(mult(R, _, _), [R]).
-register_writes(cmp(R, _, _), [R]).
-register_writes(cmpi(R, _, _), [R]).
-register_writes(ld(R, _, _), [R]).
+register_writes(add(R, _, _), [r(R)]).
+register_writes(sub(R, _, _, _), [r(R)]).
+register_writes(mult(R, _, _), [r(R)]).
+register_writes(cmp(R, _, _), [r(R)]).
+register_writes(cmpi(R, _, _), [r(R)]).
+register_writes(ld(R, _, _), [r(R)]).
 register_writes(st(_, _, _), []).
-register_writes(ldlr(R), [R]).
-register_writes(b(_, _, _, _), []).
-register_writes(bl(_, _, _, _), [lr]).
-register_writes(j(_, _, _, _), []).
-register_writes(ret(_), []).
-register_writes(rand(R, _, _), [R]).
+register_writes(b(_), [lr]).
+register_writes(j(_), []).
+register_writes(cj(_, _, _, _), []).
+register_writes(ret, []).
+register_writes(rand(R, _, _), [r(R)]).
 register_writes(log(_), []).
 register_writes(out(_, _), []).
 
@@ -289,19 +350,39 @@ save_registers([R|Rs]) -->
 	!,
 	save_registers(Rs).
 
+
 save_register(R) -->
-	lookup_variables(V, R),
+	lookup_variables([V], [R]),
 	{
 		volatile_variable(V)
 	}.
 
 save_register(R) -->
 	get_frame_size(Index),
-	compile_instruction(assignment(array(sr, Index), v(r(R)))),
+	compile_instruction(assignment(array(sr, n(Index)), v(r(R)))),
 	increment_frame_size(1).
+
+
+restore_registers([]) -->
+	[].
+
+restore_registers([R|Rs]) -->
+	restore_register(R),
+	!,
+	restore_registers(Rs).
+
+
+restore_register(R) -->
+	lookup_variables([V], [R]),
+	{
+		volatile_variable(V)
+	}.
+
+restore_register(R) -->
+	get_frame_size(Index),
+	compile_instruction(assignment(var(r(R)), array(sr, n(Index)))),
+	increment_frame_size(-1).
 
 
 volatile_variable(sr).
 volatile_variable(return(_)).
-volatile_variable(argument(_)).
-

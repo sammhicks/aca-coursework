@@ -4,6 +4,7 @@ var b = [0, 100)
 
 var r
 gcd(a, b) -> r
+out r
 
 gcd(a, b) -> r {
   var cmp = a<>b

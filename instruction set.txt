@@ -3,7 +3,6 @@ annotations:
 ?r - this register is optional, and is treated as the identity if missing
 
 cond:
-  1   true
   <   less than
   =   equals
   >   greater than
@@ -19,12 +18,11 @@ cmpi  r0 r1 i2          r0 = cond
 ld    r0 [r1, r2] i3    r0 = M[r1 + r2 + i3]
 st    r0 [r1, r2] i3    M[r1 + r2 + i3] = r0
 
-ldlr  r0                r0 = LR
+b     i0                LR = PC + 1; PC = i0
+j     i0                PC = PC + i0
+cj    i0 inv cond r1    if inv ^ (cond ?= r1): PC = PC + i0
 
-b     i0 inv cond r1    if inv ^ (cond ?= r1): PC = i0
-bl    i0 inv cond r1    if inv ^ (cond ?= r1): LR = PC + 1; PC = i0
-j     i0 inv cond r1    if inv ^ (cond ?= r1): PC = PC + i0
-ret   r0                PC = r0
+ret                     PC = LR
 
 rand  r0 a1 b2          r0 = random value in [a1, b2)
 log   message           prints message to stdout
