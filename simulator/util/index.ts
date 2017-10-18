@@ -1,1 +1,2 @@
-export { Semaphore } from "./semaphore"
+export { compare } from "./compare";
+export { Semaphore } from "./semaphore";

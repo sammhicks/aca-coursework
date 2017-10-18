@@ -1,20 +1,21 @@
 import { Instruction } from "./instruction";
-import { Register, Literal } from "../components/register";
+import { Register } from "../components/register";
 import { RegisterFile, RegisterFileWriter, RegisterWriter } from "../components/register-file";
 import { RegisterRequirements } from "../components/register-requirements";
+import { compare } from "../util/compare";
 
-export class Add extends Instruction {
+export class Cmp extends Instruction {
   private r0: Register;
-  private r12: Register[];
-  private i3: Literal
+  private r1: Register;
+  private r2: Register;
 
-  requirements(): RegisterRequirements { return new RegisterRequirements(this.r12); }
+  requirements(): RegisterRequirements { return new RegisterRequirements([this.r1, this.r2]); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     return [
       new RegisterWriter(
         this.r0,
-        rf.lookupRegisters(this.r12).reduce((acc, item) => acc + item, this.i3))
+        compare(rf.registers[this.r1], rf.registers[this.r2])
     ];
   }
 };

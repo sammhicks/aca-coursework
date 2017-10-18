@@ -3,7 +3,7 @@ import { Register, Literal } from "../components/register";
 import { RegisterFile, RegisterFileWriter, RegisterWriter } from "../components/register-file";
 import { RegisterRequirements } from "../components/register-requirements";
 
-export class Add extends Instruction {
+export class Mult extends Instruction {
   private r0: Register;
   private r12: Register[];
   private i3: Literal
@@ -14,7 +14,7 @@ export class Add extends Instruction {
     return [
       new RegisterWriter(
         this.r0,
-        rf.lookupRegisters(this.r12).reduce((acc, item) => acc + item, this.i3))
+        rf.lookupRegisters(this.r12).reduce((acc, item) => acc * item, this.i3))
     ];
   }
 };
