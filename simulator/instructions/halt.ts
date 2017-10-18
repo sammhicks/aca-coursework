@@ -3,6 +3,8 @@ import { RegisterFile, RegisterFileWriter, Halter } from "../components/register
 import { InstructionInteractions } from "../components/instruction-interactions";
 
 export class Halt extends Instruction {
+  static pneumonic: string = "halt";
+
   duration: number = 1;
 
   halts: boolean = true;

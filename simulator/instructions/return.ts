@@ -3,6 +3,8 @@ import { RegisterFile, RegisterFileWriter, PCWriter } from "../components/regist
 import { InstructionInteractions } from "../components/instruction-interactions";
 
 export class Return extends Instruction {
+  static pneumonic: string = "ret";
+
   duration: number = 1;
 
   requirements(): InstructionInteractions { return new InstructionInteractions([], false, true); }

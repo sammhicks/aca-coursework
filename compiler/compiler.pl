@@ -1,5 +1,6 @@
 
 :- module(compiler, [
+			  compile_all/0,
 			  compile_folder/1,
 			  compile_file/2
 		  ]).
@@ -7,6 +8,12 @@
 :- use_module(parser/parser).
 :- use_module(compiler/compile).
 :- use_module(optimiser/optimiser).
+
+
+compile_all :-
+	compile_folder("../feature-tests"),
+	compile_folder("../benchmarks").
+
 
 compile_folder(Folder) :-
 	string_concat(Folder, "/*.src", Pattern),
@@ -37,7 +44,7 @@ opcode(add(R0, R12, I3), op{name:"add", r0:R0, r12:R12, i3:I3}).
 opcode(sub(R0, R1, R2, I3), op{name:"sub", r0:R0, r1:R1, r2:R2, i3:I3}).
 opcode(mult(R0, R12, I3), op{name:"mult", r0:R0, r12:R12, i3:I3}).
 opcode(cmp(R0, R1, R2), op{name:"cmp", r0:R0, r1:R1, r2:R2}).
-opcode(cmpi(R0, R1, I2), op{name:"cmp", r0:R0, r1:R1, i2:I2}).
+opcode(cmpi(R0, R1, I2), op{name:"cmpi", r0:R0, r1:R1, i2:I2}).
 
 opcode(ld(R0, R12, I3), op{name:"ld", r0:R0, r12:R12, i3:I3}).
 opcode(st(R0, R12, I3), op{name:"st", r0:R0, r12:R12, i3:I3}).

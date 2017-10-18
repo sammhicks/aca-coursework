@@ -8,6 +8,8 @@ export class Store extends Instruction {
   private r12: Register[];
   private i3: Literal
 
+  static pneumonic: string = "st";
+
   duration: number = 4;
 
   requirements(): InstructionInteractions { return new InstructionInteractions(this.r12, false, false, true); }

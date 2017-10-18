@@ -7,6 +7,8 @@ export class Out extends Instruction {
   private label: string;
   private r0: Register;
 
+  static pneumonic: string = "out";
+
   duration: number = 1;
 
   requirements(): InstructionInteractions { return new InstructionInteractions([this.r0]); }

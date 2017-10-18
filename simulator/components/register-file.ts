@@ -7,10 +7,11 @@ export class RegisterFile {
   public memory: Literal[];
   public running: boolean;
 
-  constructor(registerCount: number) {
+  constructor() {
     this.pc = 0;
     this.lr = 0;
-    this.registers = Array<Literal>(registerCount).fill(0)
+    this.registers = [];
+    this.memory = [];
     this.running = true;
   }
 

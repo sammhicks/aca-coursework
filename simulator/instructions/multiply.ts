@@ -8,6 +8,8 @@ export class Multiply extends Instruction {
   private r12: Register[];
   private i3: Literal;
 
+  static pneumonic: string = "mult";
+
   duration: number = 2;
 
   requirements(): InstructionInteractions { return new InstructionInteractions(this.r12); }

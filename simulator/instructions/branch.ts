@@ -6,6 +6,8 @@ import { InstructionInteractions } from "../components/instruction-interactions"
 export class Branch extends Instruction {
   private i0: Literal;
 
+  static pneumonic: string = "branch";
+
   duration: number = 1;
 
   requirements(): InstructionInteractions { return new InstructionInteractions([], true, true); }

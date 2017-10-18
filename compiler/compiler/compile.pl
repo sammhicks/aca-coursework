@@ -13,7 +13,7 @@ compile_script(Script, Out) :-
 compile_script(script(Instructions, Functions)) -->
 	start(Functions),
 	init_state(Functions, none),
-	compile_instructions(Instructions, PC),
+	compile_instructions([assignment(var(sr), n(0))|Instructions], PC),
 	compile_functions(Functions, PC),
 	!,
 	finish.
@@ -247,12 +247,12 @@ compile_comparison(Comparison, Invert, InvFlag, CondFlag, State, State) :-
 	xor(RawInvFlag, Invert, InvFlag).
 
 
-comparison_flags(<,  false,	"<").
-comparison_flags(=,  false,	"0").
-comparison_flags(>,  false,	">").
-comparison_flags(<=, true,  ">").
-comparison_flags(<>, true,	"0").
-comparison_flags(>=, true,	"<").
+comparison_flags(<,  false,	-1).
+comparison_flags(=,  false,	 0).
+comparison_flags(>,  false,	 1).
+comparison_flags(<=, true,   1).
+comparison_flags(<>, true,	 0).
+comparison_flags(>=, true,	-1).
 
 
 compile_move_arguments([], _Index) -->

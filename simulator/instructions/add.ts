@@ -8,6 +8,8 @@ export class Add extends Instruction {
   private r12: Register[];
   private i3: Literal;
 
+  static pneumonic: string = "add";
+
   duration: number = 1;
 
   requirements(): InstructionInteractions { return new InstructionInteractions(this.r12); }

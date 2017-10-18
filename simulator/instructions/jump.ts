@@ -6,6 +6,8 @@ import { InstructionInteractions } from "../components/instruction-interactions"
 export class Jump extends Instruction {
   private i0: Literal;
 
+  static pneumonic: string = "j";
+
   duration: number = 1;
 
   requirements(): InstructionInteractions { return new InstructionInteractions([], true); }

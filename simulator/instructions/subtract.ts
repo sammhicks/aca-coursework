@@ -9,6 +9,8 @@ export class Subtract extends Instruction {
   private r2: Register | null;
   private i3: Literal;
 
+  static pneumonic: string = "sub";
+
   duration: number = 1;
 
   requirements(): InstructionInteractions { return new InstructionInteractions(this.r2 == null ? [this.r1] : [this.r1, this.r2]); }

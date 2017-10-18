@@ -5,6 +5,8 @@ import { InstructionInteractions } from "../components/instruction-interactions"
 export class Log extends Instruction {
   private message: string;
 
+  static pneumonic: string = "log";
+
   duration: number = 1;
 
   requirements(): InstructionInteractions { return new InstructionInteractions(); }

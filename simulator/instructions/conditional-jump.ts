@@ -9,6 +9,8 @@ export class ConditionalJump extends Instruction {
   private cond: Literal;
   private r1: Register;
 
+  static pneumonic: string = "cj";
+
   duration: number = 1;
 
   requirements(): InstructionInteractions { return new InstructionInteractions([], true); }
@@ -16,6 +18,7 @@ export class ConditionalJump extends Instruction {
   effects(): InstructionInteractions { return new InstructionInteractions([], true); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
-    return (this.inv == (this.cond == rf.registers[this.r1]) ? [] : [new PCWriter(rf.pc + this.i0)]);
+    const offset = (this.inv == (this.cond == rf.registers[this.r1])) ? 1 : this.i0;
+    return [new PCWriter(rf.pc + offset)];
   }
 };
