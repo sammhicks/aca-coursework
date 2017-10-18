@@ -1,0 +1,27 @@
+var a = [100, 200)
+var b = [100, 200)
+
+var ab
+
+log Function Call
+
+do_add(a, b) -> ab
+
+log Returned
+
+out a
+out b
+out ab
+
+log Done
+
+do_add(a, b) -> ab {
+  log Inside Function
+  out a
+  out b
+  var b_copy = b
+  var a_copy = a
+  ab = a_copy + b_copy
+  out ab
+  log Returning
+}

@@ -311,7 +311,8 @@ compile_function(Functions, function(Name, Returns, Arguments, Body), PC, New_PC
 		get_frame_size(Frame_Size, [New_State], [New_State]),
 		compile_instruction(assignment(var(sr), add(v(sr), n(Frame_Size))), [New_State|Push_Operations], [New_State]),
 		compile_instruction(assignment(var(sr), sub(v(sr), n(Frame_Size))), [New_State|Pop_Operations], [New_State]),
-		restore_registers(Sorted_Register_Writes, [New_State|Restore_Operations], [_]),
+		reverse(Sorted_Register_Writes, Reverse_Sorted_Register_Writes),
+		restore_registers(Reverse_Sorted_Register_Writes, [New_State|Restore_Operations], [_]),
 		append([
 			Save_Operations,
 			Push_Operations,
@@ -387,9 +388,9 @@ restore_register(R) -->
 	}.
 
 restore_register(R) -->
+	increment_frame_size(-1),
 	get_frame_size(Index),
-	compile_instruction(assignment(var(r(R)), array(sr, n(Index)))),
-	increment_frame_size(-1).
+	compile_instruction(assignment(var(r(R)), array(sr, n(Index)))).
 
 
 volatile_variable(sr).
