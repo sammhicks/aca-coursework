@@ -1,22 +1,22 @@
 import { Instruction } from "./instruction";
 import { Literal } from "../components/register";
-import { RegisterFile, RegisterFileWriter, LRWriter, PCWriter } from "../components/register-file";
-import { InstructionInteractions } from "../components/instruction-interactions";
+import { RegisterFile, RegisterFileWriter, RegisterWriter, PCWriter, LR_INDEX } from "../components/register-file";
+import { InstructionInteractions, NoInteractions, PCInteractions } from "../components/instruction-interactions";
 
 export class Branch extends Instruction {
   private i0: Literal;
 
-  static pneumonic: string = "branch";
+  static pneumonic: string = "b";
 
   duration: number = 1;
 
-  requirements(): InstructionInteractions { return new InstructionInteractions([], true, true); }
+  requirements(): InstructionInteractions { return new NoInteractions(); }
 
-  effects(): InstructionInteractions { return new InstructionInteractions([], true, true); }
+  effects(): InstructionInteractions { return new PCInteractions([LR_INDEX]); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     return [
-      new LRWriter(rf.pc + 1),
+      new RegisterWriter(LR_INDEX, rf.pc),
       new PCWriter(this.i0)
     ];
   }

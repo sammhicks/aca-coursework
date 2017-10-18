@@ -4,11 +4,18 @@ fac(n) -> result
 out result
 
 fac(n) -> f {
+  log factorial
+  out n
   if {var cmp = n<>0; cmp<=} {
+    log base
     f = 0
+    log end base
   } else {
+    log recursive
     var n_sub = n - 1
     fac(n_sub) -> f
     f = f * n
+    log end recursive
   }
+  log end
 }

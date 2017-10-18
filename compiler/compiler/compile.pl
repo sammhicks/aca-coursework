@@ -267,7 +267,7 @@ compile_move_arguments([Arg|Args], Index) -->
 
 
 compile_move_argument(Arg, Index) -->
-	compile_instruction(assignment(var(r(Index)), Arg)).
+	compile_instruction(assignment(var(argument(Index)), Arg)).
 
 
 compile_move_returns([], _Index) -->
@@ -282,7 +282,7 @@ compile_move_returns([Return|Returns], Index) -->
 
 
 compile_move_return(Arg, Index) -->
-	compile_instruction(assignment(var(Arg), v(r(Index)))).
+	compile_instruction(assignment(var(Arg), v(return(Index)))).
 
 
 compile_functions(Functions, PC) -->

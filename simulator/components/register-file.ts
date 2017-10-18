@@ -1,15 +1,15 @@
 import { Register, Literal } from "./register";
 
+export const LR_INDEX = 0;
+
 export class RegisterFile {
   public pc: Literal;
-  public lr: Literal;
   public registers: Literal[];
   public memory: Literal[];
   public running: boolean;
 
   constructor() {
     this.pc = 0;
-    this.lr = 0;
     this.registers = [];
     this.memory = [];
     this.running = true;
@@ -32,12 +32,6 @@ export class PCWriter implements RegisterFileWriter {
   constructor(private v: Literal) { }
 
   write(rf: RegisterFile): void { rf.pc = this.v; }
-}
-
-export class LRWriter implements RegisterFileWriter {
-  constructor(private v: Literal) { }
-
-  write(rf: RegisterFile): void { rf.lr = this.v; }
 }
 
 export class MemoryWriter implements RegisterFileWriter {

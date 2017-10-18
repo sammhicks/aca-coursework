@@ -1,7 +1,7 @@
 import { Instruction } from "./instruction";
 import { Register, Literal } from "../components/register";
 import { RegisterFile, RegisterFileWriter, PCWriter } from "../components/register-file";
-import { InstructionInteractions } from "../components/instruction-interactions";
+import { InstructionInteractions, RegisterInteractions, PCInteractions } from "../components/instruction-interactions";
 
 export class ConditionalJump extends Instruction {
   private i0: Literal;
@@ -13,9 +13,9 @@ export class ConditionalJump extends Instruction {
 
   duration: number = 1;
 
-  requirements(): InstructionInteractions { return new InstructionInteractions([], true); }
+  requirements(): InstructionInteractions { return new RegisterInteractions([this.r1]); }
 
-  effects(): InstructionInteractions { return new InstructionInteractions([], true); }
+  effects(): InstructionInteractions { return new PCInteractions(); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     const conditionMatchesVariable = this.cond == rf.registers[this.r1];

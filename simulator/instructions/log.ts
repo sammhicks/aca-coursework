@@ -1,6 +1,6 @@
 import { Instruction } from "./instruction";
 import { RegisterFile, RegisterFileWriter, ExternalAction } from "../components/register-file";
-import { InstructionInteractions } from "../components/instruction-interactions";
+import { InstructionInteractions, NoInteractions } from "../components/instruction-interactions";
 
 export class Log extends Instruction {
   private message: string;
@@ -9,9 +9,9 @@ export class Log extends Instruction {
 
   duration: number = 1;
 
-  requirements(): InstructionInteractions { return new InstructionInteractions(); }
+  requirements(): InstructionInteractions { return new NoInteractions(); }
 
-  effects(): InstructionInteractions { return new InstructionInteractions(); }
+  effects(): InstructionInteractions { return new NoInteractions(); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     const self = this;
