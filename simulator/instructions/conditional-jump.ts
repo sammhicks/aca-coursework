@@ -18,7 +18,8 @@ export class ConditionalJump extends Instruction {
   effects(): InstructionInteractions { return new InstructionInteractions([], true); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
-    const offset = (this.inv == (this.cond == rf.registers[this.r1])) ? 1 : this.i0;
-    return [new PCWriter(rf.pc + offset)];
+    const conditionMatchesVariable = this.cond == rf.registers[this.r1];
+    const withInversion = conditionMatchesVariable != this.inv;
+    return withInversion ? [new PCWriter(rf.pc + this.i0)] : [];
   }
 };

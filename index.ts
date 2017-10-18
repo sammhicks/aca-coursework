@@ -12,9 +12,7 @@ var registerFile = new RegisterFile();
 while (registerFile.running) {
   const nextInstruction = instructions[registerFile.pc];
 
-  if (!nextInstruction.effects().pc) {
-    registerFile.pc += 1;
-  }
+  registerFile.pc += 1;
 
   const writes = nextInstruction.execute(registerFile);
 

@@ -7,7 +7,7 @@
       "name": "Launch Program",
       "program": "${workspaceRoot}/index.js",
       "args": [
-        "benchmarks/dot_product.json"
+        "benchmarks/bubble.json"
       ]
     }
   ]

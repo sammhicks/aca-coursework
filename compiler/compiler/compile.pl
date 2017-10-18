@@ -223,8 +223,8 @@ compile_instruction(for(cond(Precondition, Variable, Comparison), Do)) -->
 	add_instructions([cj(Do_Jump_Size, InvFlag, CondFlag, Register)]),
 	compile_instructions(Do, Do_Size),
 	add_instructions([j(Loop_Jump_Size)]),
-	Do_Jump_Size is Do_Size + 2,
-	Loop_Jump_Size is -(Precondition_Size + Do_Size + 1),
+	Do_Jump_Size is Do_Size + 1,
+	Loop_Jump_Size is -(Precondition_Size + Do_Size + 2),
 	restore_state(Saved_State).
 
 compile_instruction(call(Function, Returns, Arguments)) -->
