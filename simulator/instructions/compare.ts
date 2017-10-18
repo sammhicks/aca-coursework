@@ -1,7 +1,7 @@
 import { Instruction } from "./instruction";
 import { Register } from "../components/register";
 import { RegisterFile, RegisterFileWriter, RegisterWriter } from "../components/register-file";
-import { InstructionRequirements } from "../components/instruction-requirements";
+import { InstructionInteractions } from "../components/instruction-interactions";
 import { compare } from "../util/compare";
 
 export class Compare extends Instruction {
@@ -11,7 +11,9 @@ export class Compare extends Instruction {
 
   duration: number = 1;
 
-  requirements(): InstructionRequirements { return new InstructionRequirements([this.r1, this.r2]); }
+  requirements(): InstructionInteractions { return new InstructionInteractions([this.r1, this.r2]); }
+
+  effects(): InstructionInteractions { return new InstructionInteractions([this.r0]); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     return [

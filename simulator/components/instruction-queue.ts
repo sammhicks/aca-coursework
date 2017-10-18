@@ -12,6 +12,11 @@ export class InstructionQueue {
     var pc = rf.pc;
     while (this.instructions.length < this.size) {
       var instruction = instructions[pc];
+
+      if (instruction.halts) {
+        break;
+      }
+
       this.instructions.push(instruction);
       pc = instruction.expectedPC(pc);
     }

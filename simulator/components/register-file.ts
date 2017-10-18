@@ -5,11 +5,13 @@ export class RegisterFile {
   public lr: Literal;
   public registers: Literal[];
   public memory: Literal[];
+  public running: boolean;
 
   constructor(registerCount: number) {
     this.pc = 0;
     this.lr = 0;
     this.registers = Array<Literal>(registerCount).fill(0)
+    this.running = true;
   }
 
   lookupRegisters(rs: Register[]): Literal[] { return rs.map(r => this.registers[r]); }
@@ -41,4 +43,10 @@ export class MemoryWriter implements RegisterFileWriter {
   constructor(private addr: Literal, private v: Literal) { }
 
   write(rf: RegisterFile): void { rf.memory[this.addr] = this.v; }
+}
+
+export class Halter implements RegisterFileWriter {
+  constructor() { }
+
+  write(rf: RegisterFile): void { rf.running = false; }
 }

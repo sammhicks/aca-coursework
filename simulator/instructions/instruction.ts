@@ -7,6 +7,8 @@ export abstract class Instruction {
 
   abstract duration: number;
 
+  halts: boolean = false;
+
   abstract requirements(): InstructionInteractions;
 
   abstract effects(): InstructionInteractions;
