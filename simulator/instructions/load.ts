@@ -1,7 +1,7 @@
 import { Instruction } from "./instruction";
 import { Register, Literal } from "../components/register";
 import { RegisterFile, RegisterFileWriter, RegisterWriter } from "../components/register-file";
-import { InstructionRequirements } from "../components/instruction-requirements";
+import { InstructionInteractions } from "../components/instruction-interactions";
 
 export class Load extends Instruction {
   private r0: Register;
@@ -10,7 +10,9 @@ export class Load extends Instruction {
 
   duration: number = 4;
 
-  requirements(): InstructionRequirements { return new InstructionRequirements(this.r12, false, false, true); }
+  requirements(): InstructionInteractions { return new InstructionInteractions(this.r12, false, false, true); }
+
+  effects(): InstructionInteractions { return new InstructionInteractions([this.r0]); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     return [

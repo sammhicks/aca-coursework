@@ -1,7 +1,7 @@
 import { Instruction } from "./instruction";
 import { Register, Literal } from "../components/register";
 import { RegisterFile, RegisterFileWriter, PCWriter } from "../components/register-file";
-import { InstructionRequirements } from "../components/instruction-requirements";
+import { InstructionInteractions } from "../components/instruction-interactions";
 
 export class ConditionalJump extends Instruction {
   private i0: Literal;
@@ -11,7 +11,9 @@ export class ConditionalJump extends Instruction {
 
   duration: number = 1;
 
-  requirements(): InstructionRequirements { return new InstructionRequirements([], true); }
+  requirements(): InstructionInteractions { return new InstructionInteractions([], true); }
+
+  effects(): InstructionInteractions { return new InstructionInteractions([], true); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     return (this.inv == (this.cond == rf.registers[this.r1]) ? [] : [new PCWriter(rf.pc + this.i0)]);
