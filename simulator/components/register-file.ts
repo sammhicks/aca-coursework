@@ -45,8 +45,12 @@ export class MemoryWriter implements RegisterFileWriter {
   write(rf: RegisterFile): void { rf.memory[this.addr] = this.v; }
 }
 
-export class Halter implements RegisterFileWriter {
-  constructor() { }
+export class ExternalAction implements RegisterFileWriter {
+  constructor(private action: (rf: RegisterFile) => void) { }
 
+  write(rf: RegisterFile): void { this.action(rf); }
+}
+
+export class Halter implements RegisterFileWriter {
   write(rf: RegisterFile): void { rf.running = false; }
 }
