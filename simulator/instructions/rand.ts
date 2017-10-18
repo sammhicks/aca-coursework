@@ -3,15 +3,14 @@ import { Register, Literal } from "../components/register";
 import { RegisterFile, RegisterFileWriter, RegisterWriter } from "../components/register-file";
 import { InstructionInteractions } from "../components/instruction-interactions";
 
-export class Subtract extends Instruction {
+export class Rand extends Instruction {
   private r0: Register;
-  private r1: Register;
-  private r2: Register | null;
-  private i3: Literal;
+  private a: Literal;
+  private b: Literal;
 
   duration: number = 1;
 
-  requirements(): InstructionInteractions { return new InstructionInteractions(this.r2 == null ? [this.r1] : [this.r1, this.r2]); }
+  requirements(): InstructionInteractions { return new InstructionInteractions(); }
 
   effects(): InstructionInteractions { return new InstructionInteractions([this.r0]); }
 
@@ -19,7 +18,7 @@ export class Subtract extends Instruction {
     return [
       new RegisterWriter(
         this.r0,
-        rf.registers[this.r1] - (this.r2 == null ? 0 : rf.registers[this.r2]) - this.i3)
+        this.a + Math.floor(Math.random() * (this.b - this.a)))
     ];
   }
 };

@@ -6,7 +6,7 @@ import { InstructionInteractions } from "../components/instruction-interactions"
 export class Multiply extends Instruction {
   private r0: Register;
   private r12: Register[];
-  private i3: Literal
+  private i3: Literal;
 
   duration: number = 2;
 
