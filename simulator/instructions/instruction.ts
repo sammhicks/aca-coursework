@@ -1,11 +1,13 @@
 import { Literal } from "../components/register";
 import { RegisterFile, RegisterFileWriter } from "../components/register-file";
-import { RegisterRequirements } from "../components/register-requirements";
+import { InstructionRequirements } from "../components/instruction-requirements";
 
 export abstract class Instruction {
   public name: string;
 
-  abstract requirements(): RegisterRequirements
+  abstract duration: number;
+
+  abstract requirements(): InstructionRequirements
 
   abstract execute(rf: RegisterFile): RegisterFileWriter[];
 

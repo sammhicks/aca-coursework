@@ -1,10 +1,14 @@
 import { Instruction } from "./instruction";
-import { Literal, RegisterFile, RegisterFileWriter, LRWriter, PCWriter, RegisterRequirements } from "../components";
+import { Literal } from "../components/register";
+import { RegisterFile, RegisterFileWriter, LRWriter, PCWriter } from "../components/register-file";
+import { InstructionRequirements } from "../components/instruction-requirements";
 
 export class Branch extends Instruction {
   private i0: Literal;
 
-  requirements(): RegisterRequirements { return new RegisterRequirements([], true, true); }
+  duration: number = 1;
+
+  requirements(): InstructionRequirements { return new InstructionRequirements([], true, true); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     return [

@@ -1,4 +1,4 @@
-import { Instruction } from "../instructions"
+import { Instruction } from "../instructions/instruction"
 import { RegisterFile } from "./register-file"
 
 export class InstructionQueue {

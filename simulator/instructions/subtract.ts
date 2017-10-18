@@ -1,15 +1,17 @@
 import { Instruction } from "./instruction";
 import { Register, Literal } from "../components/register";
 import { RegisterFile, RegisterFileWriter, RegisterWriter } from "../components/register-file";
-import { RegisterRequirements } from "../components/register-requirements";
+import { InstructionRequirements } from "../components/instruction-requirements";
 
-export class Sub extends Instruction {
+export class Subtract extends Instruction {
   private r0: Register;
   private r1: Register;
   private r2: Register | null;
   private i3: Literal
 
-  requirements(): RegisterRequirements { return new RegisterRequirements(this.r2 == null ? [this.r1] : [this.r1, this.r2]); }
+  duration: number = 1;
+
+  requirements(): InstructionRequirements { return new InstructionRequirements(this.r2 == null ? [this.r1] : [this.r1, this.r2]); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     return [

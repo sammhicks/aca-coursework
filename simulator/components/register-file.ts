@@ -4,6 +4,7 @@ export class RegisterFile {
   public pc: Literal;
   public lr: Literal;
   public registers: Literal[];
+  public memory: Literal[];
 
   constructor(registerCount: number) {
     this.pc = 0;
@@ -34,4 +35,10 @@ export class LRWriter implements RegisterFileWriter {
   constructor(private v: Literal) { }
 
   write(rf: RegisterFile): void { rf.lr = this.v; }
+}
+
+export class MemoryWriter implements RegisterFileWriter {
+  constructor(private addr: Literal, private v: Literal) { }
+
+  write(rf: RegisterFile): void { rf.memory[this.addr] = this.v; }
 }
