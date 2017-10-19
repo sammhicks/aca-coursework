@@ -9,7 +9,7 @@ export class Out extends Instruction {
 
   static pneumonic: string = "out";
 
-  duration: number = 1;
+  duration(): number { return 1; }
 
   requirements(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
 

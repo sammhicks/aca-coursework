@@ -10,7 +10,7 @@ export class Random extends Instruction {
 
   static pneumonic: string = "rand";
 
-  duration: number = 1;
+  duration(): number { return 10; }
 
   requirements(): InstructionInteractions { return new NoInteractions(); }
 

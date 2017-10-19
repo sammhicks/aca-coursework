@@ -11,7 +11,7 @@ export class CompareImmediate extends Instruction {
 
   static pneumonic: string = "cmpi";
 
-  duration: number = 1;
+  duration(): number { return 1; }
 
   requirements(): InstructionInteractions { return new RegisterInteractions([this.r1]); }
 

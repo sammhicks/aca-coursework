@@ -7,7 +7,7 @@ export class Log extends Instruction {
 
   static pneumonic: string = "log";
 
-  duration: number = 1;
+  duration(): number { return 1; }
 
   requirements(): InstructionInteractions { return new NoInteractions(); }
 

@@ -10,7 +10,7 @@ export class Multiply extends Instruction {
 
   static pneumonic: string = "mult";
 
-  duration: number = 2;
+  duration(): number { return 2; }
 
   requirements(): InstructionInteractions { return new RegisterInteractions(this.r12); }
 

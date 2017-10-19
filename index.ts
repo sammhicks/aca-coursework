@@ -9,10 +9,16 @@ const instructions = loadInstructions(sourceFile);
 
 var registerFile = new RegisterFile();
 
+var clockCycleCount = 0;
+var instructionsExecutedCount = 0;
+
 while (registerFile.running) {
   const nextInstruction = instructions[registerFile.pc];
 
   registerFile.pc += 1;
+
+  clockCycleCount += nextInstruction.duration();
+  instructionsExecutedCount += 1;
 
   const writes = nextInstruction.execute(registerFile);
 
@@ -20,5 +26,9 @@ while (registerFile.running) {
     writes[index].write(registerFile);
   }
 }
+
+console.log("Instructions Executed:", instructionsExecutedCount);
+console.log("Clock Cycles:", clockCycleCount);
+console.log("Instructions per Clock Cycle:", instructionsExecutedCount / clockCycleCount);
 
 process.exit();

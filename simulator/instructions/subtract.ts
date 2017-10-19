@@ -11,7 +11,7 @@ export class Subtract extends Instruction {
 
   static pneumonic: string = "sub";
 
-  duration: number = 1;
+  duration(): number { return 1; }
 
   requirements(): InstructionInteractions { return new RegisterInteractions(this.r2 == null ? [this.r1] : [this.r1, this.r2]); }
 

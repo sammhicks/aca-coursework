@@ -1,28 +1,19 @@
 var numItems = 50
 var items[50]
 
-log Setup
-
 for {var i = 0} ; {var atEnd = i <> numItems; atEnd<} ; {i = i + 1} {
   items[i] = [0,100)
 }
 
-log Bubble
-
 var anyMoved = 1
 
 for {anyMoved>} {
-  log Round
   anyMoved = 0
   var bubbleRange = numItems - 1
   for {var i = 0} ; {var atEnd = i <> bubbleRange; atEnd<} ; {i = i + 1} {
     var a = items[i]
     var b = items[i + 1]
     if {var cmp = a <> b; cmp>} {
-      log Moved
-      out i
-      out a
-      out b
       anyMoved = 1
       items[i+1] = a
       items[i] = b

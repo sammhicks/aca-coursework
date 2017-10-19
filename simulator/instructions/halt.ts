@@ -5,9 +5,9 @@ import { InstructionInteractions, NoInteractions } from "../components/instructi
 export class Halt extends Instruction {
   static pneumonic: string = "halt";
 
-  duration: number = 1;
+  duration(): number { return 1; }
 
-  halts: boolean = true;
+  halts(): boolean { return true; }
 
   requirements(): InstructionInteractions { return new NoInteractions(); }
 

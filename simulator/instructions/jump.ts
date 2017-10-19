@@ -8,7 +8,7 @@ export class Jump extends Instruction {
 
   static pneumonic: string = "j";
 
-  duration: number = 1;
+  duration(): number { return 1; }
 
   requirements(): InstructionInteractions { return new NoInteractions(); }
 

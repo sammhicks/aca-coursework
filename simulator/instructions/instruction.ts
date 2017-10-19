@@ -5,9 +5,9 @@ import { InstructionInteractions } from "../components/instruction-interactions"
 export abstract class Instruction {
   public name: string;
 
-  abstract duration: number;
+  abstract duration(): number;
 
-  halts: boolean = false;
+  halts(): boolean { return false; }
 
   abstract requirements(): InstructionInteractions;
 

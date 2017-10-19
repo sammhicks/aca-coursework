@@ -10,7 +10,7 @@ export class Load extends Instruction {
 
   static pneumonic: string = "ld";
 
-  duration: number = 4;
+  duration(): number { return 10; }
 
   requirements(): InstructionInteractions { return new MemoryInteractions(this.r12); }
 

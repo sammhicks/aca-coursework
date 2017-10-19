@@ -8,7 +8,7 @@ export class Branch extends Instruction {
 
   static pneumonic: string = "b";
 
-  duration: number = 1;
+  duration(): number { return 2; }
 
   requirements(): InstructionInteractions { return new NoInteractions(); }
 

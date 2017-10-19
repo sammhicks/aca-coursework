@@ -11,7 +11,7 @@ export class ConditionalJump extends Instruction {
 
   static pneumonic: string = "cj";
 
-  duration: number = 1;
+  duration(): number { return 2; }
 
   requirements(): InstructionInteractions { return new RegisterInteractions([this.r1]); }
 

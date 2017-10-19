@@ -5,7 +5,7 @@ import { InstructionInteractions, RegisterInteractions, PCInteractions } from ".
 export class Return extends Instruction {
   static pneumonic: string = "ret";
 
-  duration: number = 1;
+  duration(): number { return 1; }
 
   requirements(): InstructionInteractions { return new RegisterInteractions([LR_INDEX]); }
 

@@ -10,7 +10,7 @@ export class Add extends Instruction {
 
   static pneumonic: string = "add";
 
-  duration: number = 1;
+  duration(): number { return 1; }
 
   requirements(): InstructionInteractions { return new RegisterInteractions(this.r12); }
 
