@@ -9,6 +9,8 @@ export class Compare extends Instruction {
   private r1: Register;
   private r2: Register;
 
+  static pneumonic: string = "cmp";
+
   duration(): number { return 1; }
 
   requirements(): InstructionInteractions { return new RegisterInteractions([this.r1, this.r2]); }

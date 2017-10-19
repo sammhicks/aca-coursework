@@ -10,7 +10,7 @@ export class Store extends Instruction {
 
   static pneumonic: string = "st";
 
-  duration(): number { return 10; }
+  duration(): number { return 2; }
 
   requirements(): InstructionInteractions { return new MemoryInteractions(this.r12); }
 

@@ -29,6 +29,7 @@ while (registerFile.running) {
 
 console.log("Instructions Executed:", instructionsExecutedCount);
 console.log("Clock Cycles:", clockCycleCount);
-console.log("Instructions per Clock Cycle:", instructionsExecutedCount / clockCycleCount);
+console.log("Clock Cycles per Instruction:", (clockCycleCount / instructionsExecutedCount).toFixed(3));
+console.log("Instructions per Clock Cycle:", (instructionsExecutedCount / clockCycleCount).toFixed(3));
 
 process.exit();
