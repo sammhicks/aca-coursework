@@ -7,7 +7,7 @@
       "name": "Launch Program",
       "program": "${workspaceRoot}/index.js",
       "args": [
-        "benchmarks/factorial.json"
+        "benchmarks/gcd_iter.json"
       ]
     }
   ]

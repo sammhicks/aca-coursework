@@ -11,10 +11,10 @@ gcd(a, b) -> r {
   if {cmp=} {
     r = a
   } else if {cmp<} {
-    a = a - b
+    b = b - a
     gcd(a, b) -> r
   } else {
-    b = b - a
+    a = a - b
     gcd(a, b) -> r
   }
 }

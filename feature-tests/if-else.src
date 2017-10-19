@@ -1,0 +1,9 @@
+var x = 0
+if {var cmp = x<>3; cmp<} {
+  log if
+  log also if
+} else {
+  log else
+  log also else
+}
+log after if

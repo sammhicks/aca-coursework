@@ -199,11 +199,10 @@ compile_instruction(if(cond(Precondition, Variable, Comparison), Then, Else)) --
 	add_instructions([cj(Else_Jump_Size, InvFlag, CondFlag, Register)]),
 	lookup_state(After_Comparison_State),
 	compile_instructions(Else, Else_Size),
-	add_instructions([j(Then_Jump_Size)]),
-	Else_Jump_Size is Else_Size + 2,
+	add_instructions([j(Then_Size)]),
+	Else_Jump_Size is Else_Size + 1,
 	restore_state(After_Comparison_State),
 	compile_instructions(Then, Then_Size),
-	Then_Jump_Size is Then_Size + 1,
 	restore_state(Saved_State).
 
 compile_instruction(for(Setup, Condition, Increment, Do)) -->
