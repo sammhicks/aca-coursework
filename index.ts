@@ -2,12 +2,15 @@ import * as process from "process"
 
 import { loadInstructions } from "./simulator/components/instruction-loader";
 import { RegisterFile } from "./simulator/components/register-file";
+import { ExecutionUnit } from "./simulator/components/execution-unit";
 
 const sourceFile = process.argv[2];
 
 const instructions = loadInstructions(sourceFile);
 
 var registerFile = new RegisterFile();
+
+var executionUnit = new ExecutionUnit(registerFile);
 
 var clockCycleCount = 0;
 var instructionsExecutedCount = 0;
@@ -17,14 +20,14 @@ while (registerFile.running) {
 
   registerFile.pc += 1;
 
-  clockCycleCount += nextInstruction.duration();
-  instructionsExecutedCount += 1;
+  executionUnit.executeInstruction(nextInstruction);
 
-  const writes = nextInstruction.execute(registerFile);
-
-  for (var index = 0; index < writes.length; index++) {
-    writes[index].write(registerFile);
+  while (!executionUnit.completed()) {
+    ++clockCycleCount;
+    executionUnit.tick();
   }
+
+  instructionsExecutedCount += 1;
 }
 
 console.log("Instructions Executed:", instructionsExecutedCount);
