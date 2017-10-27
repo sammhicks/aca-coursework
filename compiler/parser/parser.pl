@@ -1,7 +1,7 @@
 
 :- module(parser, [
-			  script//1
-		  ]).
+              script//1     % -Script
+          ]).
 
 :- use_module(library(dcg/basics)).
 

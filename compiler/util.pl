@@ -1,8 +1,8 @@
 
 :- module(util, [
-			 is//2,
-			 xor/3
-		 ]).
+	      is//2, % -A, +B. is/2 within DCG. Does not affect the list
+	      xor/3  % ?A, ?B, ?C. C == A xor B
+	  ]).
 
 
 is(A, B, State, State) :-

@@ -1,7 +1,7 @@
 
 :- module(compile, [
-			  compile_script/2
-		  ]).
+	      compile_script/2      % -Script, +Instructions
+	  ]).
 
 :- use_module(state).
 :- use_module(util).

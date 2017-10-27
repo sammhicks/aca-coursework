@@ -1,9 +1,9 @@
 
 :- module(compiler, [
-			  compile_all/0,
-			  compile_folder/1,
-			  compile_file/2
-		  ]).
+	      compile_all/0,        %
+	      compile_folder/1,     % +Folder
+	      compile_file/2        % +Source_Path, Output_Path
+	  ]).
 
 :- use_module(parser/parser).
 :- use_module(compiler/compile).

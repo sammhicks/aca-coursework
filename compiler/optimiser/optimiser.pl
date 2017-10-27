@@ -1,7 +1,7 @@
 
 :- module(optimiser, [
-			  optimise/2
-		  ]).
+	      optimise/2
+	  ]).
 
 optimise(Old, New) :-
 	optimise_once(Old, Intermediate),

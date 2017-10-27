@@ -1,22 +1,24 @@
 
 :- module(state, [
-			  start//1,
-			  init_state//2,
-			  finish//0,
-			  lookup_state//1,
-			  restore_state//1,
-			  add_variables//1,
-			  lookup_variables//2,
-			  temp_variable//1,
-			  lookup_function//2,
-			  get_frame_size//1,
-			  set_frame_size//1,
-			  increment_frame_size//1,
-			  add_instructions//1
-		  ]).
+	      start//1,			    % -Functions
+	      init_state//2,		    % -Functions, Current_Function
+	      finish//0,                    %
+	      lookup_state//1,		    % -State
+	      restore_state//1,             % +State
+	      add_variables//1,		    % +Variable
+	      lookup_variables//2,          % ?Variables, ?Registers
+	      temp_variable//1,             % -Variable
+	      lookup_function//2,           % +Function, -Entry_Point
+	      get_frame_size//1,            % -Frame_Size
+	      set_frame_size//1,            % +Frame_Size
+	      increment_frame_size//1,      % +Frame_Offset
+	      add_instructions//1           % +Additional_Instructions
+	  ]).
 
-state(state(Variables, Functions, Frame_Size),
-	  Variables, Functions, Frame_Size).
+state(
+    state(Variables, Functions, Frame_Size),
+    Variables, Functions, Frame_Size
+).
 
 
 start(Functions, Tail, [State|Tail]) :-
