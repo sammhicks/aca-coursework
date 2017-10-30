@@ -3,25 +3,27 @@ import { Instruction } from "../instructions/instruction";
 import { RegisterFile } from "./register-file";
 
 export class ExecutionUnit extends Countdown {
-  private instruction: Instruction | null;
+  private _rf: RegisterFile;
+  private _instruction: Instruction | null;
 
-  constructor(private rf: RegisterFile) {
+  constructor(rf: RegisterFile) {
     super();
 
-    this.instruction = null;
+    this._rf = rf;
+    this._instruction = null;
   }
 
   executeInstruction(instruction: Instruction) {
-    this.instruction = instruction;
+    this._instruction = instruction;
     this.reset(instruction.duration());
   }
 
   onCompletion(): void {
-    if (this.instruction != null) {
-      const writes = this.instruction.execute(this.rf);
+    if (this._instruction != null) {
+      const writes = this._instruction.execute(this._rf);
 
       for (var index = 0; index < writes.length; index++) {
-        writes[index].write(this.rf);
+        writes[index].write(this._rf);
       }
     }
   }

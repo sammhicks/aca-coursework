@@ -2,22 +2,24 @@ import { Instruction } from "../instructions/instruction"
 import { RegisterFile } from "./register-file"
 
 export class InstructionQueue {
-  private instructions: Instruction[]
+  private _instructions: Instruction[]
+  private _size: number;
 
-  constructor(private size: number) {
-    this.instructions = [];
+  constructor(size: number) {
+    this._instructions = [];
+    this._size = size;
   }
 
   load(rf: RegisterFile, instructions: Instruction[]) {
     var pc = rf.pc;
-    while (this.instructions.length < this.size) {
+    while (this._instructions.length < this._size) {
       var instruction = instructions[pc];
 
       if (instruction.halts) {
         break;
       }
 
-      this.instructions.push(instruction);
+      this._instructions.push(instruction);
       pc = instruction.expectedPC(pc);
     }
   }
