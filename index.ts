@@ -3,31 +3,45 @@ import * as process from "process"
 import { loadInstructions } from "./simulator/components/instruction-loader";
 import { RegisterFile } from "./simulator/components/register-file";
 import { ExecutionUnit } from "./simulator/components/execution-unit";
+import { ReorderBuffer } from "./simulator/components/reorder-buffer";
+
+import { initArray } from "./simulator/util";
 
 const sourceFile = process.argv[2];
 
 const instructions = loadInstructions(sourceFile);
 
-var registerFile = new RegisterFile();
+const registerFile = new RegisterFile();
 
-var executionUnit = new ExecutionUnit(registerFile);
+const executionUnitCount = 1;
+const executionUnits = initArray(executionUnitCount, () => new ExecutionUnit());
+
+const reorderBufferSlotsCount = 3;
+const reorderBuffer = new ReorderBuffer(registerFile, reorderBufferSlotsCount);
 
 var clockCycleCount = 0;
 var instructionsExecutedCount = 0;
 
 while (registerFile.running) {
-  const nextInstruction = instructions[registerFile.pc];
+  for (var i = 0; i < executionUnitCount; ++i) {
+    const executionUnit = executionUnits[i];
+    if (executionUnit.isReady) {
+      const nextInstruction = instructions[registerFile.pc];
 
-  registerFile.pc += 1;
+      registerFile.pc = nextInstruction.expectedPC(registerFile.pc);
 
-  executionUnit.executeInstruction(nextInstruction);
+      executionUnit.executeInstruction(registerFile.lookupInteractions(nextInstruction.requirements()), nextInstruction, reorderBuffer.newSlot());
+    }
+  }
 
-  while (!executionUnit.completed()) {
-    ++clockCycleCount;
+  for (var i = 0; i < executionUnitCount; ++i) {
+    const executionUnit = executionUnits[i];
     executionUnit.tick();
   }
 
-  instructionsExecutedCount += 1;
+  instructionsExecutedCount += reorderBuffer.writeBack();
+
+  ++clockCycleCount;
 }
 
 console.log("Instructions Executed:", instructionsExecutedCount);

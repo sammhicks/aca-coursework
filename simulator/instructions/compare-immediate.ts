@@ -2,7 +2,7 @@ import { Instruction } from "./instruction";
 import { Register, Literal } from "../components/register";
 import { RegisterFile, RegisterFileWriter, RegisterWriter } from "../components/register-file";
 import { InstructionInteractions, RegisterInteractions } from "../components/instruction-interactions";
-import { compare } from "../util/compare";
+import { compare } from "../util";
 
 export class CompareImmediate extends Instruction {
   private r0: Register;

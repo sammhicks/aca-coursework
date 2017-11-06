@@ -1,4 +1,5 @@
 import { Register, Literal } from "./register";
+import { InstructionInteractions } from "./instruction-interactions";
 
 export const LR_INDEX = 0;
 
@@ -13,6 +14,18 @@ export class RegisterFile {
     this.registers = [];
     this.memory = [];
     this.running = true;
+  }
+
+  lookupInteractions(interactions: InstructionInteractions): RegisterFile {
+    var clone = new RegisterFile();
+    if (interactions.pc) { clone.pc = this.pc; }
+    for (var registerName in interactions.registers) {
+      clone.registers[registerName] = this.registers[registerName];
+    }
+    clone.memory = this.memory;
+    clone.running = this.running;
+
+    return clone;
   }
 
   lookupRegisters(rs: Register[]): Literal[] { return rs.map(r => this.registers[r]); }

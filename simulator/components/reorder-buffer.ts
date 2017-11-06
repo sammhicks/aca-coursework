@@ -1,64 +1,85 @@
-import { RegisterFile, RegisterWriter } from "./register-file";
-import { Counter } from "../util/counter";
+import { RegisterFile, RegisterFileWriter } from "./register-file";
+import { Abortable, Counter, initArray, RingItem } from "../util";
 
-enum ReorderBufferSlotState {
-  Available,
-  Reserved,
-  Complete
+interface ReorderBufferSlotState { };
+
+class AvailableSlot implements ReorderBufferSlotState { };
+
+class ReservedSlot implements ReorderBufferSlotState {
+  constructor(public instructionHandler: Abortable) { }
 };
 
-export class ReorderBufferSlot {
-  private _state: ReorderBufferSlotState;
-  private _writes: RegisterWriter[];
+class CompleteSlot implements ReorderBufferSlotState {
+  constructor(public writes: RegisterFileWriter[]) { }
+};
 
-  constructor() {
-    this._state = ReorderBufferSlotState.Available;
-    this._writes = [];
+export class ReorderBufferSlot extends RingItem<ReorderBufferSlot> {
+  private _resetBuffer: (slot: ReorderBufferSlot) => void;
+  private _state: ReorderBufferSlotState;
+
+  constructor(resetBuffer: (slot: ReorderBufferSlot) => void) {
+    super();
+    this._resetBuffer = resetBuffer;
+    this._state = {};
   }
 
   get isAvailable() {
-    return this._state == ReorderBufferSlotState.Available;
+    return this._state instanceof AvailableSlot;
   }
 
   get isReserved() {
-    return this._state == ReorderBufferSlotState.Reserved;
+    return this._state instanceof ReservedSlot;
   }
 
   get isComplete() {
-    return this._state == ReorderBufferSlotState.Complete;
+    return this._state instanceof CompleteSlot;
   }
 
-  reserve() {
-    if (this.isAvailable) {
-      this._state = ReorderBufferSlotState.Reserved
+  reserve(instructionHandler: Abortable) {
+    if (this._state instanceof AvailableSlot) {
+      this._state = new ReservedSlot(instructionHandler);
     } else {
       throw Error("Reorder Buffer is not available");
     }
   }
 
-  buffer(writes: RegisterWriter[]) {
-    if (this.isReserved) {
-      this._state = ReorderBufferSlotState.Complete;
-      this._writes = writes;
+  updateInstructionHandler(instructionHandler: Abortable) {
+    if (this._state instanceof ReservedSlot) {
+      this._state.instructionHandler = instructionHandler;
+    }
+  }
+
+  buffer(writes: RegisterFileWriter[], clearSuccessors: boolean = false) {
+    if (this._state instanceof ReservedSlot) {
+      this._state = new CompleteSlot(writes);
+
+      if (clearSuccessors) {
+        this._resetBuffer(this.next);
+        this.next.clearRipple();
+      }
     }
     else {
       throw Error("Reorder Buffer is not reserved");
     }
   }
 
-  clear() {
-    this._state = ReorderBufferSlotState.Available;
-    this._writes = [];
+  private clearRipple() {
+    if (!(this._state instanceof AvailableSlot)) {
+      if (this._state instanceof ReservedSlot) {
+        this._state.instructionHandler.abort();
+      }
+
+      this._state = new AvailableSlot();
+    }
   }
 
   writeBackIfReady(rf: RegisterFile): boolean {
-    if (this.isComplete) {
-      for (var index = 0; index < this._writes.length; index++) {
-        this._writes[index].write(rf);
+    if (this._state instanceof CompleteSlot) {
+      for (var index = 0; index < this._state.writes.length; index++) {
+        this._state.writes[index].write(rf);
       }
 
-      this._state = ReorderBufferSlotState.Available;
-      this._writes = [];
+      this._state = new AvailableSlot();
 
       return true;
     }
@@ -69,35 +90,25 @@ export class ReorderBufferSlot {
 
 export class ReorderBuffer {
   private _rf: RegisterFile;
-  private _slots: ReorderBufferSlot[];
-  private _freeSlotIndex: Counter;
-  private _activeSlotIndex: Counter;
+  private _freeSlot: ReorderBufferSlot;
+  private _activeSlot: ReorderBufferSlot;
 
   constructor(rf: RegisterFile, size: number) {
     this._rf = rf;
-    this._slots = [];
 
-    for (var n = 0; n < size; ++n) {
-      this._slots[n] = new ReorderBufferSlot();
-    }
-
-    this._freeSlotIndex = new Counter(size);
-    this._activeSlotIndex = new Counter(size);
-  }
-
-  get freeSlot() {
-    return this._slots[this._freeSlotIndex.value];
-  }
-
-  get activeSlot() {
-    return this._slots[this._activeSlotIndex.value];
+    const self = this;
+    this._freeSlot = RingItem.createRing(size, () => new ReorderBufferSlot(function resetBuffer(slot: ReorderBufferSlot) {
+      self._freeSlot = slot;
+      self._activeSlot = slot;
+    }));
+    this._activeSlot = this._freeSlot;
   }
 
   newSlot(): ReorderBufferSlot {
-    const freeSlot = this.freeSlot;
+    const freeSlot = this._freeSlot;
     if (freeSlot.isAvailable) {
       freeSlot.reserve();
-      this._activeSlotIndex.increment();
+      this._freeSlot = this._freeSlot.next;
 
       return freeSlot;
     } else {
@@ -105,9 +116,12 @@ export class ReorderBuffer {
     }
   }
 
-  writeBack() {
-    while (this.activeSlot.writeBackIfReady(this._rf) {
-      this._activeSlotIndex.increment();
+  writeBack(): number {
+    var writeBackCount = 0;
+    while (this._activeSlot.writeBackIfReady(this._rf)) {
+      this._activeSlot = this._activeSlot.next;
+      ++writeBackCount;
     }
+    return writeBackCount;
   }
 }
