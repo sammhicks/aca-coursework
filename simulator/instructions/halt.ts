@@ -5,13 +5,13 @@ import { InstructionInteractions, NoInteractions } from "../components/instructi
 export class Halt extends Instruction {
   static pneumonic: string = "halt";
 
-  duration(): number { return 1; }
+  get duration(): number { return 1; }
 
-  halts(): boolean { return true; }
+  get halts(): boolean { return true; }
 
-  requirements(): InstructionInteractions { return new NoInteractions(); }
+  get requirements(): InstructionInteractions { return new NoInteractions(); }
 
-  effects(): InstructionInteractions { return new NoInteractions(); }
+  get effects(): InstructionInteractions { return new NoInteractions(); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] { return [new Halter()]; }
 };

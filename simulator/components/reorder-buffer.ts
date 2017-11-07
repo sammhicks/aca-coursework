@@ -1,5 +1,5 @@
 import { RegisterFile, RegisterFileWriter } from "./register-file";
-import { Abortable, Counter, initArray, RingItem } from "../util";
+import { Abortable, RingItem } from "../util";
 
 interface ReorderBufferSlotState { };
 
@@ -104,10 +104,10 @@ export class ReorderBuffer {
     this._activeSlot = this._freeSlot;
   }
 
-  newSlot(): ReorderBufferSlot {
+  newSlot(instructionHandler: Abortable): ReorderBufferSlot {
     const freeSlot = this._freeSlot;
     if (freeSlot.isAvailable) {
-      freeSlot.reserve();
+      freeSlot.reserve(instructionHandler);
       this._freeSlot = this._freeSlot.next;
 
       return freeSlot;

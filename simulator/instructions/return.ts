@@ -5,11 +5,11 @@ import { InstructionInteractions, RegisterInteractions, PCInteractions } from ".
 export class Return extends Instruction {
   static pneumonic: string = "ret";
 
-  duration(): number { return 1; }
+  get duration(): number { return 1; }
 
-  requirements(): InstructionInteractions { return new RegisterInteractions([LR_INDEX]); }
+  get requirements(): InstructionInteractions { return new RegisterInteractions([LR_INDEX]); }
 
-  effects(): InstructionInteractions { return new PCInteractions(); }
+  get effects(): InstructionInteractions { return new PCInteractions(); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] { return [new PCWriter(rf.registers[LR_INDEX])]; }
 };

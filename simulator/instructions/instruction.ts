@@ -9,13 +9,13 @@ export class BranchPredictionError {
 export abstract class Instruction {
   public name: string;
 
-  abstract duration(): number;
+  abstract get duration(): number;
 
-  halts(): boolean { return false; }
+  get halts(): boolean { return false; }
 
-  abstract requirements(): InstructionInteractions;
+  abstract get requirements(): InstructionInteractions;
 
-  abstract effects(): InstructionInteractions;
+  abstract get effects(): InstructionInteractions;
 
   abstract execute(rf: RegisterFile): RegisterFileWriter[] | BranchPredictionError;
 

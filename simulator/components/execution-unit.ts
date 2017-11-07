@@ -28,7 +28,7 @@ export class ExecutionUnit extends Countdown {
     if (this._state instanceof IdleUnit) {
       this._state = new ActiveUnit(rf, instruction, reorderBufferSlot);
       reorderBufferSlot.updateInstructionHandler(this);
-      this.reset(instruction.duration());
+      this.reset(instruction.duration);
     } else {
       throw Error("Execution Unit not ready!");
     }

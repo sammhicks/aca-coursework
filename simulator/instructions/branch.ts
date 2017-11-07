@@ -8,11 +8,11 @@ export class Branch extends Instruction {
 
   static pneumonic: string = "b";
 
-  duration(): number { return 2; }
+  get duration(): number { return 2; }
 
-  requirements(): InstructionInteractions { return new NoInteractions(); }
+  get requirements(): InstructionInteractions { return new NoInteractions(); }
 
-  effects(): InstructionInteractions { return new PCInteractions([LR_INDEX]); }
+  get effects(): InstructionInteractions { return new PCInteractions([LR_INDEX]); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     return [

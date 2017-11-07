@@ -10,11 +10,11 @@ export class Random extends Instruction {
 
   static pneumonic: string = "rand";
 
-  duration(): number { return 4; }
+  get duration(): number { return 4; }
 
-  requirements(): InstructionInteractions { return new NoInteractions(); }
+  get requirements(): InstructionInteractions { return new NoInteractions(); }
 
-  effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
+  get effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     const generatedValue = this.a1 + Math.floor(Math.random() * (this.b2 - this.a1));

@@ -11,11 +11,11 @@ export class Compare extends Instruction {
 
   static pneumonic: string = "cmp";
 
-  duration(): number { return 1; }
+  get duration(): number { return 1; }
 
-  requirements(): InstructionInteractions { return new RegisterInteractions([this.r1, this.r2]); }
+  get requirements(): InstructionInteractions { return new RegisterInteractions([this.r1, this.r2]); }
 
-  effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
+  get effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     return [

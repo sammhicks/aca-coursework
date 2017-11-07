@@ -9,11 +9,11 @@ export class Out extends Instruction {
 
   static pneumonic: string = "out";
 
-  duration(): number { return 1; }
+  get duration(): number { return 1; }
 
-  requirements(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
+  get requirements(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
 
-  effects(): InstructionInteractions { return new NoInteractions(); }
+  get effects(): InstructionInteractions { return new NoInteractions(); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     const self = this;

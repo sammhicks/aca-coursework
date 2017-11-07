@@ -25,12 +25,12 @@ var instructionsExecutedCount = 0;
 while (registerFile.running) {
   for (var i = 0; i < executionUnitCount; ++i) {
     const executionUnit = executionUnits[i];
-    if (executionUnit.isReady) {
+    if (executionUnit.isAvailable) {
       const nextInstruction = instructions[registerFile.pc];
 
       registerFile.pc = nextInstruction.expectedPC(registerFile.pc);
 
-      executionUnit.executeInstruction(registerFile.lookupInteractions(nextInstruction.requirements()), nextInstruction, reorderBuffer.newSlot());
+      executionUnit.executeInstruction(registerFile.lookupInteractions(nextInstruction.requirements), nextInstruction, reorderBuffer.newSlot(executionUnit));
     }
   }
 

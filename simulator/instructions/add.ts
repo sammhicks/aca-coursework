@@ -10,11 +10,11 @@ export class Add extends Instruction {
 
   static pneumonic: string = "add";
 
-  duration(): number { return 1; }
+  get duration(): number { return 1; }
 
-  requirements(): InstructionInteractions { return new RegisterInteractions(this.r12); }
+  get requirements(): InstructionInteractions { return new RegisterInteractions(this.r12); }
 
-  effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
+  get effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     return [

@@ -7,11 +7,11 @@ export class Log extends Instruction {
 
   static pneumonic: string = "log";
 
-  duration(): number { return 1; }
+  get duration(): number { return 1; }
 
-  requirements(): InstructionInteractions { return new NoInteractions(); }
+  get requirements(): InstructionInteractions { return new NoInteractions(); }
 
-  effects(): InstructionInteractions { return new NoInteractions(); }
+  get effects(): InstructionInteractions { return new NoInteractions(); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] {
     const self = this;

@@ -11,11 +11,11 @@ export class ConditionalJump extends Instruction {
 
   static pneumonic: string = "cj";
 
-  duration(): number { return 2; }
+  get duration(): number { return 2; }
 
-  requirements(): InstructionInteractions { return new RegisterInteractions([this.r1]); }
+  get requirements(): InstructionInteractions { return new RegisterInteractions([this.r1]); }
 
-  effects(): InstructionInteractions { return new PCInteractions(); }
+  get effects(): InstructionInteractions { return new PCInteractions(); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] | BranchPredictionError {
     const conditionMatchesVariable = this.cond == rf.registers[this.r1];

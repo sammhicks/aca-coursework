@@ -8,11 +8,11 @@ export class Jump extends Instruction {
 
   static pneumonic: string = "j";
 
-  duration(): number { return 1; }
+  get duration(): number { return 1; }
 
-  requirements(): InstructionInteractions { return new NoInteractions(); }
+  get requirements(): InstructionInteractions { return new NoInteractions(); }
 
-  effects(): InstructionInteractions { return new PCInteractions(); }
+  get effects(): InstructionInteractions { return new PCInteractions(); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] { return [new PCWriter(rf.pc + this.i0)]; }
 };

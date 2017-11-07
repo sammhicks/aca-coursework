@@ -5,11 +5,11 @@ import { InstructionInteractions, NoInteractions } from "../components/instructi
 export class NoOp extends Instruction {
   static pneumonic: string = "noop";
 
-  duration(): number { return 1; }
+  get duration(): number { return 1; }
 
-  requirements(): InstructionInteractions { return new NoInteractions(); }
+  get requirements(): InstructionInteractions { return new NoInteractions(); }
 
-  effects(): InstructionInteractions { return new NoInteractions(); }
+  get effects(): InstructionInteractions { return new NoInteractions(); }
 
   execute(rf: RegisterFile): RegisterFileWriter[] { return []; }
 };
