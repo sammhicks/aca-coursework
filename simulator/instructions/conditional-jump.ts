@@ -1,15 +1,16 @@
-import { Instruction, BranchPredictionError } from "./instruction";
-import { Register, Literal } from "../components/register";
-import { RegisterFile, RegisterFileWriter, PCWriter } from "../components/register-file";
-import { InstructionInteractions, RegisterInteractions, PCInteractions } from "../components/instruction-interactions";
+import { BranchInstruction } from "./instruction";
+import { Register, Literal } from "../components/basic-types";
+import { ExecutionResult, PCWriter, BranchPredictionError } from "../components/execution-result";
+import { LikeRegisterFile } from "../components/register-file";
+import { InstructionInteractions, PCInteractions, RegisterInteractions } from "../components/instruction-interactions";
 
-export class ConditionalJump extends Instruction {
-  private i0: Literal;
-  private inv: boolean;
-  private cond: Literal;
-  private r1: Register;
+export class ConditionalJump extends BranchInstruction {
+  readonly i0: Literal;
+  readonly inv: boolean;
+  readonly cond: Literal;
+  readonly r1: Register;
 
-  static pneumonic: string = "cj";
+  static readonly pneumonic: string = "cj";
 
   get duration(): number { return 2; }
 
@@ -17,8 +18,8 @@ export class ConditionalJump extends Instruction {
 
   get effects(): InstructionInteractions { return new PCInteractions(); }
 
-  execute(rf: RegisterFile): RegisterFileWriter[] | BranchPredictionError {
-    const conditionMatchesVariable = this.cond == rf.registers[this.r1];
+  execute(rf: LikeRegisterFile): ExecutionResult[] | BranchPredictionError {
+    const conditionMatchesVariable = this.cond == rf.readRegister(this.r1);
     const withInversion = conditionMatchesVariable != this.inv;
 
     const pc = rf.pc + (withInversion ? this.i0 : 0);

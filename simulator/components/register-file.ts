@@ -1,64 +1,56 @@
-import { Register, Literal } from "./register";
-import { InstructionInteractions } from "./instruction-interactions";
+import { Address, PC, Register, Literal, Memory, Registers } from "./basic-types";
 
 export const LR_INDEX = 0;
 
-export class RegisterFile {
-  public pc: Literal;
-  public registers: Literal[];
-  public memory: Literal[];
-  public running: boolean;
+export function lookupRegisters(rf: LikeRegisterFile, rs: Register[]): Literal[] { return rs.map(r => rf.readRegister(r)); }
+
+export interface LikeRegisterFile {
+  pc: PC;
+
+  readRegister(reg: Register): Literal;
+  writeRegister(reg: Register, val: Literal): void;
+
+  readMemory(addr: Address): Literal;
+  writeMemory(addr: Address, val: Literal): void;
+
+  performExternalAction(action: () => void): void;
+
+  isRunning(): boolean;
+  halt(): void;
+}
+
+export class RegisterFile implements LikeRegisterFile {
+  private _pc: PC;
+  private _registers: Registers;
+  private _memory: Memory;
+  private _isRunning: boolean;
 
   constructor() {
-    this.pc = 0;
-    this.registers = [];
-    this.memory = [];
-    this.running = true;
+    this._pc = 0;
+    this._registers = [];
+    this._memory = [];
+    this._isRunning = true;
   }
 
-  lookupInteractions(interactions: InstructionInteractions): RegisterFile {
-    var clone = new RegisterFile();
-    if (interactions.pc) { clone.pc = this.pc; }
-    for (var registerName in interactions.registers) {
-      clone.registers[registerName] = this.registers[registerName];
-    }
-    clone.memory = this.memory;
-    clone.running = this.running;
+  get pc(): PC { return this._pc; }
 
-    return clone;
-  }
+  set pc(pc: PC) { this._pc = pc; }
 
-  lookupRegisters(rs: Register[]): Literal[] { return rs.map(r => this.registers[r]); }
-}
 
-export interface RegisterFileWriter {
-  write(rf: RegisterFile): void;
-}
+  readRegister(r: Register): Literal { return this._registers[r]; }
 
-export class RegisterWriter implements RegisterFileWriter {
-  constructor(private r: Register, private v: Literal) { }
+  writeRegister(reg: Register, val: Literal): void { this._registers[reg] = val; }
 
-  write(rf: RegisterFile): void { rf.registers[this.r] = this.v; }
-}
 
-export class PCWriter implements RegisterFileWriter {
-  constructor(private v: Literal) { }
+  readMemory(addr: Literal) { return this._memory[addr]; }
 
-  write(rf: RegisterFile): void { rf.pc = this.v; }
-}
+  writeMemory(addr: Literal, val: Literal): void { this._memory[addr] = val; }
 
-export class MemoryWriter implements RegisterFileWriter {
-  constructor(private addr: Literal, private v: Literal) { }
 
-  write(rf: RegisterFile): void { rf.memory[this.addr] = this.v; }
-}
+  performExternalAction(action: () => void): void { action(); }
 
-export class ExternalAction implements RegisterFileWriter {
-  constructor(private action: (rf: RegisterFile) => void) { }
 
-  write(rf: RegisterFile): void { this.action(rf); }
-}
+  isRunning(): boolean { return this._isRunning; }
 
-export class Halter implements RegisterFileWriter {
-  write(rf: RegisterFile): void { rf.running = false; }
+  halt(): void { this._isRunning = false; }
 }

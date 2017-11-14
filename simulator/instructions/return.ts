@@ -1,9 +1,10 @@
-import { Instruction } from "./instruction";
-import { RegisterFile, RegisterFileWriter, PCWriter, LR_INDEX } from "../components/register-file";
+import { BranchInstruction } from "./instruction";
+import { ExecutionResult, PCWriter } from "../components/execution-result";
+import { LikeRegisterFile, LR_INDEX } from "../components/register-file";
 import { InstructionInteractions, RegisterInteractions, PCInteractions } from "../components/instruction-interactions";
 
-export class Return extends Instruction {
-  static pneumonic: string = "ret";
+export class Return extends BranchInstruction {
+  static readonly pneumonic: string = "ret";
 
   get duration(): number { return 1; }
 
@@ -11,5 +12,5 @@ export class Return extends Instruction {
 
   get effects(): InstructionInteractions { return new PCInteractions(); }
 
-  execute(rf: RegisterFile): RegisterFileWriter[] { return [new PCWriter(rf.registers[LR_INDEX])]; }
+  execute(rf: LikeRegisterFile): ExecutionResult[] { return [new PCWriter(rf.readRegister(LR_INDEX))]; }
 };

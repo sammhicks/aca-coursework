@@ -1,7 +1,7 @@
-import { Register } from "./register"
+import { Register } from "./basic-types"
 
 export class InstructionInteractions {
-  constructor(public registers: Register[] = [], public pc: boolean, public memory: boolean) { }
+  constructor(readonly registers: Register[] = [], readonly pc: boolean, readonly memory: boolean) { }
 }
 
 export class RegisterInteractions extends InstructionInteractions {

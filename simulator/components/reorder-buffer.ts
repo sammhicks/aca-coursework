@@ -1,5 +1,7 @@
-import { RegisterFile, RegisterFileWriter } from "./register-file";
-import { Abortable, RingItem } from "../util";
+import { ExecutionResult } from "./execution-result";
+import { LikeRegisterFile } from "./register-file";
+import { Abortable } from "../util/abortable";
+import { RingItem } from "../util/ring";
 
 interface ReorderBufferSlotState { };
 
@@ -10,7 +12,7 @@ class ReservedSlot implements ReorderBufferSlotState {
 };
 
 class CompleteSlot implements ReorderBufferSlotState {
-  constructor(public writes: RegisterFileWriter[]) { }
+  constructor(public results: ExecutionResult[]) { }
 };
 
 export class ReorderBufferSlot extends RingItem<ReorderBufferSlot> {
@@ -49,9 +51,9 @@ export class ReorderBufferSlot extends RingItem<ReorderBufferSlot> {
     }
   }
 
-  buffer(writes: RegisterFileWriter[], clearSuccessors: boolean = false) {
+  buffer(results: ExecutionResult[], clearSuccessors: boolean = false) {
     if (this._state instanceof ReservedSlot) {
-      this._state = new CompleteSlot(writes);
+      this._state = new CompleteSlot(results);
 
       if (clearSuccessors) {
         this._resetBuffer(this.next);
@@ -73,10 +75,10 @@ export class ReorderBufferSlot extends RingItem<ReorderBufferSlot> {
     }
   }
 
-  writeBackIfReady(rf: RegisterFile): boolean {
+  writeBackIfReady(rf: LikeRegisterFile): boolean {
     if (this._state instanceof CompleteSlot) {
-      for (var index = 0; index < this._state.writes.length; index++) {
-        this._state.writes[index].write(rf);
+      for (var index = 0; index < this._state.results.length; index++) {
+        this._state.results[index].consume(rf);
       }
 
       this._state = new AvailableSlot();
@@ -89,11 +91,11 @@ export class ReorderBufferSlot extends RingItem<ReorderBufferSlot> {
 }
 
 export class ReorderBuffer {
-  private _rf: RegisterFile;
+  private _rf: LikeRegisterFile;
   private _freeSlot: ReorderBufferSlot;
   private _activeSlot: ReorderBufferSlot;
 
-  constructor(rf: RegisterFile, size: number) {
+  constructor(rf: LikeRegisterFile, size: number) {
     this._rf = rf;
 
     const self = this;

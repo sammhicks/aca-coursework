@@ -3,16 +3,14 @@ import { RegisterFile } from "./register-file"
 
 export class InstructionQueue {
   private _instructions: Instruction[]
-  private _size: number;
 
-  constructor(size: number) {
+  constructor(readonly size: number) {
     this._instructions = [];
-    this._size = size;
   }
 
   load(rf: RegisterFile, instructions: Instruction[]) {
     var pc = rf.pc;
-    while (this._instructions.length < this._size) {
+    while (this._instructions.length < this.size) {
       var instruction = instructions[pc];
 
       if (instruction.halts) {

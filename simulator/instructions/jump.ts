@@ -1,12 +1,13 @@
-import { Instruction } from "./instruction";
-import { Literal } from "../components/register";
-import { RegisterFile, RegisterFileWriter, PCWriter } from "../components/register-file";
+import { BranchInstruction } from "./instruction";
+import { Literal } from "../components/basic-types";
+import { ExecutionResult, PCWriter } from "../components/execution-result";
+import { LikeRegisterFile } from "../components/register-file";
 import { InstructionInteractions, NoInteractions, PCInteractions } from "../components/instruction-interactions";
 
-export class Jump extends Instruction {
-  private i0: Literal;
+export class Jump extends BranchInstruction {
+  readonly i0: Literal;
 
-  static pneumonic: string = "j";
+  static readonly pneumonic: string = "j";
 
   get duration(): number { return 1; }
 
@@ -14,5 +15,5 @@ export class Jump extends Instruction {
 
   get effects(): InstructionInteractions { return new PCInteractions(); }
 
-  execute(rf: RegisterFile): RegisterFileWriter[] { return [new PCWriter(rf.pc + this.i0)]; }
+  execute(rf: LikeRegisterFile): ExecutionResult[] { return [new PCWriter(rf.pc + this.i0)]; }
 };

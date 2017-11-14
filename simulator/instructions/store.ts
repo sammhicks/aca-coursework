@@ -1,14 +1,15 @@
-import { Instruction } from "./instruction";
-import { Register, Literal } from "../components/register";
-import { RegisterFile, RegisterFileWriter, MemoryWriter } from "../components/register-file";
-import { InstructionInteractions, MemoryInteractions, RegisterInteractions } from "../components/instruction-interactions";
+import { MemoryInstruction } from "./instruction";
+import { Register, Literal } from "../components/basic-types";
+import { ExecutionResult, MemoryWriter } from "../components/execution-result";
+import { LikeRegisterFile, lookupRegisters } from "../components/register-file";
+import { InstructionInteractions, RegisterInteractions, MemoryInteractions } from "../components/instruction-interactions";
 
-export class Store extends Instruction {
+export class Store extends MemoryInstruction {
   private r0: Register;
   private r12: Register[];
   private i3: Literal
 
-  static pneumonic: string = "st";
+  static readonly pneumonic: string = "st";
 
   get duration(): number { return 2; }
 
@@ -16,11 +17,11 @@ export class Store extends Instruction {
 
   get effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
 
-  execute(rf: RegisterFile): RegisterFileWriter[] {
+  execute(rf: LikeRegisterFile): ExecutionResult[] {
     return [
       new MemoryWriter(
-        rf.lookupRegisters(this.r12).reduce((acc, item) => acc + item, this.i3),
-        rf.registers[this.r0])
+        lookupRegisters(rf, this.r12).reduce((acc, item) => acc + item, this.i3),
+        rf.readRegister(this.r0))
     ];
   }
 };

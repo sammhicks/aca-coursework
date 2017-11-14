@@ -1,14 +1,15 @@
-import { Instruction } from "./instruction";
-import { Register, Literal } from "../components/register";
-import { RegisterFile, RegisterFileWriter, RegisterWriter } from "../components/register-file";
+import { ArithmeticInstruction } from "./instruction";
+import { Register, Literal } from "../components/basic-types";
+import { ExecutionResult, RegisterWriter } from "../components/execution-result";
+import { LikeRegisterFile, lookupRegisters } from "../components/register-file";
 import { InstructionInteractions, RegisterInteractions } from "../components/instruction-interactions";
 
-export class Multiply extends Instruction {
-  private r0: Register;
-  private r12: Register[];
-  private i3: Literal;
+export class Multiply extends ArithmeticInstruction {
+  readonly r0: Register;
+  readonly r12: Register[];
+  readonly i3: Literal;
 
-  static pneumonic: string = "mult";
+  static readonly pneumonic: string = "mult";
 
   get duration(): number { return 2; }
 
@@ -16,11 +17,11 @@ export class Multiply extends Instruction {
 
   get effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
 
-  execute(rf: RegisterFile): RegisterFileWriter[] {
+  execute(rf: LikeRegisterFile): ExecutionResult[] {
     return [
       new RegisterWriter(
         this.r0,
-        rf.lookupRegisters(this.r12).reduce((acc, item) => acc * item, this.i3))
+        lookupRegisters(rf, this.r12).reduce((acc, item) => acc * item, this.i3))
     ];
   }
 };

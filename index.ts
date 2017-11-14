@@ -1,6 +1,7 @@
 import * as process from "process"
 
 import { loadInstructions } from "./simulator/components/instruction-loader";
+import { InstructionCategories as IC } from "./simulator/instructions/instruction";
 import { RegisterFile } from "./simulator/components/register-file";
 import { ExecutionUnit } from "./simulator/components/execution-unit";
 import { ReorderBuffer } from "./simulator/components/reorder-buffer";
@@ -13,17 +14,28 @@ const instructions = loadInstructions(sourceFile);
 
 const registerFile = new RegisterFile();
 
-const executionUnitCount = 1;
-const executionUnits = initArray(executionUnitCount, () => new ExecutionUnit());
-
 const reorderBufferSlotsCount = 3;
 const reorderBuffer = new ReorderBuffer(registerFile, reorderBufferSlotsCount);
+
+const arithmeticExecutionUnitCount = 5;
+const memoryExecutionUnitCount = 2;
+const branchExecutionInstructionCount = 2;
+const ioExecutionInstructionCount = 2;
+const miscExecutionInstructionCount = 2;
+
+const executionUnits = ([] as ExecutionUnit[]).concat(
+  initArray(arithmeticExecutionUnitCount, () => new ExecutionUnit(IC.Arithmetic)),
+  initArray(memoryExecutionUnitCount, () => new ExecutionUnit(IC.Memory)),
+  initArray(branchExecutionInstructionCount, () => new ExecutionUnit(IC.Branch)),
+  initArray(ioExecutionInstructionCount, () => new ExecutionUnit(IC.IO)),
+  initArray(miscExecutionInstructionCount, () => new ExecutionUnit(IC.Misc)),
+);
 
 var clockCycleCount = 0;
 var instructionsExecutedCount = 0;
 
 while (registerFile.running) {
-  for (var i = 0; i < executionUnitCount; ++i) {
+  for (var i = 0; i < executionUnits.length; ++i) {
     const executionUnit = executionUnits[i];
     if (executionUnit.isAvailable) {
       const nextInstruction = instructions[registerFile.pc];
@@ -34,10 +46,7 @@ while (registerFile.running) {
     }
   }
 
-  for (var i = 0; i < executionUnitCount; ++i) {
-    const executionUnit = executionUnits[i];
-    executionUnit.tick();
-  }
+  for (var i = 0; i < executionUnits.length; ++i) { executionUnits[i].tick(); }
 
   instructionsExecutedCount += reorderBuffer.writeBack();
 

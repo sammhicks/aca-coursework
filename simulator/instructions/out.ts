@@ -1,13 +1,14 @@
-import { Instruction } from "./instruction";
-import { Register } from "../components/register";
-import { RegisterFile, RegisterFileWriter, ExternalAction } from "../components/register-file";
+import { IOInstruction } from "./instruction";
+import { Register } from "../components/basic-types";
+import { ExecutionResult, ExternalAction } from "../components/execution-result";
+import { LikeRegisterFile } from "../components/register-file";
 import { InstructionInteractions, NoInteractions, RegisterInteractions } from "../components/instruction-interactions";
 
-export class Out extends Instruction {
-  private label: string;
-  private r0: Register;
+export class Out extends IOInstruction {
+  readonly label: string;
+  readonly r0: Register;
 
-  static pneumonic: string = "out";
+  static readonly pneumonic: string = "out";
 
   get duration(): number { return 1; }
 
@@ -15,10 +16,8 @@ export class Out extends Instruction {
 
   get effects(): InstructionInteractions { return new NoInteractions(); }
 
-  execute(rf: RegisterFile): RegisterFileWriter[] {
+  execute(rf: LikeRegisterFile): ExecutionResult[] {
     const self = this;
-    return [new ExternalAction(function action(rf: RegisterFile) {
-      console.log("Out: %s (%d) = %d", self.label, self.r0, rf.registers[self.r0]);
-    })];
+    return [new ExternalAction(() => console.log("Out: %s (%d) = %d", self.label, self.r0, rf.readRegister(self.r0)))];
   }
 };

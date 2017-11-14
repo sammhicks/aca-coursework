@@ -1,9 +1,10 @@
-import { Instruction } from "./instruction";
-import { RegisterFile, RegisterFileWriter, Halter } from "../components/register-file";
+import { MiscInstruction } from "./instruction";
+import { ExecutionResult, Halter } from "../components/execution-result";
+import { LikeRegisterFile } from "../components/register-file";
 import { InstructionInteractions, NoInteractions } from "../components/instruction-interactions";
 
-export class Halt extends Instruction {
-  static pneumonic: string = "halt";
+export class Halt extends MiscInstruction {
+  static readonly pneumonic: string = "halt";
 
   get duration(): number { return 1; }
 
@@ -13,5 +14,5 @@ export class Halt extends Instruction {
 
   get effects(): InstructionInteractions { return new NoInteractions(); }
 
-  execute(rf: RegisterFile): RegisterFileWriter[] { return [new Halter()]; }
+  execute(rf: LikeRegisterFile): ExecutionResult[] { return [new Halter()]; }
 };

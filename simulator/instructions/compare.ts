@@ -1,15 +1,16 @@
-import { Instruction } from "./instruction";
-import { Register } from "../components/register";
-import { RegisterFile, RegisterFileWriter, RegisterWriter } from "../components/register-file";
+import { ArithmeticInstruction } from "./instruction";
+import { Register, Literal } from "../components/basic-types";
+import { ExecutionResult, RegisterWriter } from "../components/execution-result";
+import { LikeRegisterFile, lookupRegisters } from "../components/register-file";
 import { InstructionInteractions, RegisterInteractions } from "../components/instruction-interactions";
-import { compare } from "../util";
+import { compare } from "../util/compare";
 
-export class Compare extends Instruction {
+export class Compare extends ArithmeticInstruction {
   private r0: Register;
   private r1: Register;
   private r2: Register;
 
-  static pneumonic: string = "cmp";
+  static readonly pneumonic: string = "cmp";
 
   get duration(): number { return 1; }
 
@@ -17,11 +18,11 @@ export class Compare extends Instruction {
 
   get effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
 
-  execute(rf: RegisterFile): RegisterFileWriter[] {
+  execute(rf: LikeRegisterFile): ExecutionResult[] {
     return [
       new RegisterWriter(
         this.r0,
-        compare(rf.registers[this.r1], rf.registers[this.r2]))
+        compare(rf.readRegister(this.r1), rf.readRegister(this.r2)))
     ];
   }
 };

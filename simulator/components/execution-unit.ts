@@ -1,20 +1,20 @@
-import { Instruction } from "../instructions/instruction";
+import { Instruction, InstructionCategories } from "../instructions/instruction";
 import { RegisterFile } from "./register-file";
 import { ReorderBufferSlot } from "./reorder-buffer";
-import { Countdown } from "../util";
+import { Countdown } from "../util/countdown";
 
 interface ExecutionUnitState { }
 
 class IdleUnit implements ExecutionUnitState { }
 
 class ActiveUnit implements ExecutionUnitState {
-  constructor(public rf: RegisterFile, public instruction: Instruction, public reorderBufferSlot: ReorderBufferSlot) { }
+  constructor(readonly rf: RegisterFile, readonly instruction: Instruction, readonly reorderBufferSlot: ReorderBufferSlot) { }
 }
 
 export class ExecutionUnit extends Countdown {
   private _state: ExecutionUnitState;
 
-  constructor() {
+  constructor(readonly category: InstructionCategories) {
     super();
 
     this._state = new IdleUnit();
@@ -26,9 +26,13 @@ export class ExecutionUnit extends Countdown {
 
   executeInstruction(rf: RegisterFile, instruction: Instruction, reorderBufferSlot: ReorderBufferSlot) {
     if (this._state instanceof IdleUnit) {
-      this._state = new ActiveUnit(rf, instruction, reorderBufferSlot);
-      reorderBufferSlot.updateInstructionHandler(this);
-      this.reset(instruction.duration);
+      if (instruction.category == this.category) {
+        this._state = new ActiveUnit(rf, instruction, reorderBufferSlot);
+        reorderBufferSlot.updateInstructionHandler(this);
+        this.reset(instruction.duration);
+      } else {
+        throw Error("Execution Unit can't handle this instruction!");
+      }
     } else {
       throw Error("Execution Unit not ready!");
     }
