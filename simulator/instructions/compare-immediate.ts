@@ -1,8 +1,8 @@
 import { ArithmeticInstruction } from "./instruction";
 import { Register, Literal } from "../components/basic-types";
-import { ExecutionResult, RegisterWriter } from "../components/execution-result";
-import { LikeRegisterFile } from "../components/register-file";
-import { InstructionInteractions, RegisterInteractions } from "../components/instruction-interactions";
+import { RegisterWriter } from "../components/execution-result";
+import { HasRegisters } from "../components/register-file";
+import { ArithmeticInteractions } from "../components/instruction-interactions";
 import { compare } from "../util/compare";
 
 export class CompareImmediate extends ArithmeticInstruction {
@@ -12,13 +12,13 @@ export class CompareImmediate extends ArithmeticInstruction {
 
   static readonly pneumonic: string = "cmpi";
 
-  get duration(): number { return 1; }
+  get duration() { return 1; }
 
-  get requirements(): InstructionInteractions { return new RegisterInteractions([this.r1]); }
+  get requirements() { return new ArithmeticInteractions([this.r1]); }
 
-  get effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
+  get effects() { return new ArithmeticInteractions([this.r0]); }
 
-  execute(rf: LikeRegisterFile): ExecutionResult[] {
+  execute(rf: HasRegisters): [RegisterWriter] {
     return [
       new RegisterWriter(
         this.r0,

@@ -1,18 +1,18 @@
 import { MiscInstruction } from "./instruction";
-import { ExecutionResult, Halter } from "../components/execution-result";
-import { LikeRegisterFile } from "../components/register-file";
-import { InstructionInteractions, NoInteractions } from "../components/instruction-interactions";
+import { Halter } from "../components/execution-result";
+import { Halts } from "../components/register-file";
+import { MiscInteractions } from "../components/instruction-interactions";
 
 export class Halt extends MiscInstruction {
   static readonly pneumonic: string = "halt";
 
-  get duration(): number { return 1; }
+  get duration() { return 1; }
 
-  get halts(): boolean { return true; }
+  get halts() { return true; }
 
-  get requirements(): InstructionInteractions { return new NoInteractions(); }
+  get requirements() { return new MiscInteractions(); }
 
-  get effects(): InstructionInteractions { return new NoInteractions(); }
+  get effects() { return new MiscInteractions(); }
 
-  execute(rf: LikeRegisterFile): ExecutionResult[] { return [new Halter()]; }
+  execute(rf: Halts): [Halter] { return [new Halter()]; }
 };

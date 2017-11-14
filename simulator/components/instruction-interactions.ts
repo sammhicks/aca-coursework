@@ -1,21 +1,33 @@
 import { Register } from "./basic-types"
 
-export class InstructionInteractions {
-  constructor(readonly registers: Register[] = [], readonly pc: boolean, readonly memory: boolean) { }
+export interface InstructionInteractions { }
+
+export interface HasPCInteractions extends InstructionInteractions {
+  pcFlag: boolean;
 }
 
-export class RegisterInteractions extends InstructionInteractions {
-  constructor(registers: Register[]) { super(registers, false, false); }
+export interface HasRegisterInteractions extends InstructionInteractions {
+  rs: Register[];
 }
 
-export class NoInteractions extends InstructionInteractions {
-  constructor() { super([], false, false); }
+export interface HasMemoryInteractions extends InstructionInteractions {
+  addrFlag: boolean;
 }
 
-export class PCInteractions extends InstructionInteractions {
-  constructor(registers: Register[] = []) { super(registers, true, false); }
+export class ArithmeticInteractions implements HasRegisterInteractions {
+  constructor(public rs: Register[]) { }
 }
 
-export class MemoryInteractions extends InstructionInteractions {
-  constructor(registers: Register[]) { super(registers, false, true); }
+export class MemoryInteractions implements HasRegisterInteractions, HasMemoryInteractions {
+  constructor(public rs: Register[], public addrFlag: boolean) { }
 }
+
+export class BranchInteractions implements HasPCInteractions, HasRegisterInteractions {
+  constructor(public pcFlag: boolean, public rs: Register[]) { }
+}
+
+export class IOInteractions implements HasRegisterInteractions {
+  constructor(public rs: Register[]) { }
+}
+
+export class MiscInteractions implements InstructionInteractions { }

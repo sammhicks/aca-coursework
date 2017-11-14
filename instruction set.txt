@@ -7,25 +7,29 @@ cond:
   =   equals
   >   greater than
 
+Arithmetic Instructions:
 add   r0 [r1, r2] i3    r0 = r1 + r2 + i3
 sub   r0 r1 ?r2 i3      r0 = r1 - r2 - i3
 mult  r0 [r1, r2] i3    r0 = r1 * r2 * i3
 cmp   r0 r1 r2          r0 = cond
 cmpi  r0 r1 i2          r0 = cond
 
+Memory Instructions:
 ld    r0 [r1, r2] i3    r0 = M[r1 + r2 + i3]
 st    r0 [r1, r2] i3    M[r1 + r2 + i3] = r0
 
+Branch Instructions:
 b     i0                LR = PC + 1; PC = i0
 j     i0                PC = PC + i0
 cj    i0 inv cond r1    if inv ^ (cond == r1): PC = PC + i0
 
 ret                     PC = LR
 
+IO Instructions:
 rand  r0 a1 b2          r0 = random value in [a1, b2)
 
 log   message           prints message to stdout
 out   label r0          prints r0 with label to stdout
 
-noop
+Misc Instructions:
 halt

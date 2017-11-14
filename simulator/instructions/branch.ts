@@ -1,24 +1,24 @@
 import { BranchInstruction } from "./instruction";
 import { Literal } from "../components/basic-types";
-import { ExecutionResult, RegisterWriter, PCWriter } from "../components/execution-result";
-import { LR_INDEX, LikeRegisterFile } from "../components/register-file";
-import { InstructionInteractions, NoInteractions, PCInteractions } from "../components/instruction-interactions";
+import { RegisterWriter, PCWriter } from "../components/execution-result";
+import { LR_INDEX, HasPC, HasRegisters } from "../components/register-file";
+import { BranchInteractions } from "../components/instruction-interactions";
 
 export class Branch extends BranchInstruction {
   readonly i0: Literal;
 
   static readonly pneumonic: string = "b";
 
-  get duration(): number { return 2; }
+  get duration() { return 2; }
 
-  get requirements(): InstructionInteractions { return new NoInteractions(); }
+  get requirements() { return new BranchInteractions(false, []); }
 
-  get effects(): InstructionInteractions { return new PCInteractions([LR_INDEX]); }
+  get effects() { return new BranchInteractions(true, [LR_INDEX]); }
 
-  execute(rf: LikeRegisterFile): ExecutionResult[] {
+  execute(rf: HasPC & HasRegisters) {
     return [
-      new RegisterWriter(LR_INDEX, rf.pc),
-      new PCWriter(this.i0)
+      new PCWriter(this.i0),
+      new RegisterWriter(LR_INDEX, rf.pc)
     ];
   }
 };

@@ -1,4 +1,4 @@
-import { Instruction, InstructionCategories } from "../instructions/instruction";
+import { Instruction } from "../instructions/instruction";
 import { RegisterFile } from "./register-file";
 import { ReorderBufferSlot } from "./reorder-buffer";
 import { Countdown } from "../util/countdown";
@@ -14,7 +14,7 @@ class ActiveUnit implements ExecutionUnitState {
 export class ExecutionUnit extends Countdown {
   private _state: ExecutionUnitState;
 
-  constructor(readonly category: InstructionCategories) {
+  constructor(public category: { new(): Instruction; }) {
     super();
 
     this._state = new IdleUnit();
@@ -26,7 +26,7 @@ export class ExecutionUnit extends Countdown {
 
   executeInstruction(rf: RegisterFile, instruction: Instruction, reorderBufferSlot: ReorderBufferSlot) {
     if (this._state instanceof IdleUnit) {
-      if (instruction.category == this.category) {
+      if (instruction instanceof this.category) {
         this._state = new ActiveUnit(rf, instruction, reorderBufferSlot);
         reorderBufferSlot.updateInstructionHandler(this);
         this.reset(instruction.duration);

@@ -1,20 +1,20 @@
 import { IOInstruction } from "./instruction";
-import { ExecutionResult, ExternalAction } from "../components/execution-result";
-import { LikeRegisterFile } from "../components/register-file";
-import { InstructionInteractions, NoInteractions } from "../components/instruction-interactions";
+import { ExternalAction } from "../components/execution-result";
+import { HasRegisters } from "../components/register-file";
+import { IOInteractions } from "../components/instruction-interactions";
 
 export class Log extends IOInstruction {
   readonly message: string;
 
   static readonly pneumonic: string = "log";
 
-  get duration(): number { return 1; }
+  get duration() { return 1; }
 
-  get requirements(): InstructionInteractions { return new NoInteractions(); }
+  get requirements() { return new IOInteractions([]); }
 
-  get effects(): InstructionInteractions { return new NoInteractions(); }
+  get effects() { return new IOInteractions([]); }
 
-  execute(rf: LikeRegisterFile): ExecutionResult[] {
+  execute(rf: HasRegisters) {
     const self = this;
     return [new ExternalAction(() => console.log("Log: \"%s\"", self.message))];
   }

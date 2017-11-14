@@ -1,8 +1,8 @@
 import { IOInstruction } from "./instruction";
 import { Register } from "../components/basic-types";
-import { ExecutionResult, ExternalAction } from "../components/execution-result";
-import { LikeRegisterFile } from "../components/register-file";
-import { InstructionInteractions, NoInteractions, RegisterInteractions } from "../components/instruction-interactions";
+import { ExternalAction } from "../components/execution-result";
+import { HasRegisters } from "../components/register-file";
+import { IOInteractions } from "../components/instruction-interactions";
 
 export class Out extends IOInstruction {
   readonly label: string;
@@ -10,13 +10,13 @@ export class Out extends IOInstruction {
 
   static readonly pneumonic: string = "out";
 
-  get duration(): number { return 1; }
+  get duration() { return 1; }
 
-  get requirements(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
+  get requirements() { return new IOInteractions([this.r0]); }
 
-  get effects(): InstructionInteractions { return new NoInteractions(); }
+  get effects() { return new IOInteractions([]); }
 
-  execute(rf: LikeRegisterFile): ExecutionResult[] {
+  execute(rf: HasRegisters) {
     const self = this;
     return [new ExternalAction(() => console.log("Out: %s (%d) = %d", self.label, self.r0, rf.readRegister(self.r0)))];
   }

@@ -1,8 +1,5 @@
-import { InstructionInteractions } from "./instruction-interactions";
-import { LikeRegisterFile } from "./register-file";
-import { RegisterSync } from "./register-sync";
-
-interface ReservationStationState { }
+import { InstructionInteractions } from "../instruction-interactions";
+import { LikeRegisterFile } from "../register-file";
 
 class IdleReservationStation implements ReservationStationState { }
 

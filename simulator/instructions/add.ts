@@ -1,8 +1,8 @@
 import { ArithmeticInstruction } from "./instruction";
 import { Register, Literal } from "../components/basic-types";
-import { ExecutionResult, RegisterWriter } from "../components/execution-result";
-import { LikeRegisterFile, lookupRegisters } from "../components/register-file";
-import { InstructionInteractions, RegisterInteractions } from "../components/instruction-interactions";
+import { RegisterWriter } from "../components/execution-result";
+import { HasRegisters, lookupRegisters } from "../components/register-file";
+import { ArithmeticInteractions } from "../components/instruction-interactions";
 
 export class Add extends ArithmeticInstruction {
   readonly r0: Register;
@@ -11,13 +11,13 @@ export class Add extends ArithmeticInstruction {
 
   static readonly pneumonic: string = "add";
 
-  get duration(): number { return 1; }
+  get duration() { return 1; }
 
-  get requirements(): InstructionInteractions { return new RegisterInteractions(this.r12); }
+  get requirements() { return new ArithmeticInteractions(this.r12); }
 
-  get effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
+  get effects() { return new ArithmeticInteractions([this.r0]); }
 
-  execute(rf: LikeRegisterFile): ExecutionResult[] {
+  execute(rf: HasRegisters): [RegisterWriter] {
     return [
       new RegisterWriter(
         this.r0,

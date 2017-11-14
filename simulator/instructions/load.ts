@@ -1,8 +1,8 @@
 import { MemoryInstruction } from "./instruction";
 import { Register, Literal } from "../components/basic-types";
-import { ExecutionResult, RegisterWriter } from "../components/execution-result";
-import { LikeRegisterFile, lookupRegisters } from "../components/register-file";
-import { InstructionInteractions, RegisterInteractions, MemoryInteractions } from "../components/instruction-interactions";
+import { RegisterWriter } from "../components/execution-result";
+import { HasRegisters, HasMemory, lookupRegisters } from "../components/register-file";
+import { MemoryInteractions } from "../components/instruction-interactions";
 
 export class Load extends MemoryInstruction {
   readonly r0: Register;
@@ -11,13 +11,13 @@ export class Load extends MemoryInstruction {
 
   static readonly pneumonic: string = "ld";
 
-  get duration(): number { return 2; }
+  get duration() { return 2; }
 
-  get requirements(): InstructionInteractions { return new MemoryInteractions(this.r12); }
+  get requirements() { return new MemoryInteractions(this.r12, true); }
 
-  get effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
+  get effects() { return new MemoryInteractions([this.r0], false); }
 
-  execute(rf: LikeRegisterFile): ExecutionResult[] {
+  execute(rf: HasRegisters & HasMemory): [RegisterWriter] {
     return [
       new RegisterWriter(
         this.r0,

@@ -1,23 +1,23 @@
-import { MiscInstruction } from "./instruction";
+import { IOInstruction } from "./instruction";
 import { Register, Literal } from "../components/basic-types";
-import { ExecutionResult, RegisterWriter, ExternalAction } from "../components/execution-result";
-import { LikeRegisterFile } from "../components/register-file";
-import { InstructionInteractions, NoInteractions, RegisterInteractions } from "../components/instruction-interactions";
+import { RegisterWriter, ExternalAction } from "../components/execution-result";
+import { HasRegisters } from "../components/register-file";
+import { IOInteractions } from "../components/instruction-interactions";
 
-export class Random extends MiscInstruction {
+export class Random extends IOInstruction {
   private r0: Register;
   private a1: Literal;
   private b2: Literal;
 
   static readonly pneumonic: string = "rand";
 
-  get duration(): number { return 4; }
+  get duration() { return 4; }
 
-  get requirements(): InstructionInteractions { return new NoInteractions(); }
+  get requirements() { return new IOInteractions([]); }
 
-  get effects(): InstructionInteractions { return new RegisterInteractions([this.r0]); }
+  get effects() { return new IOInteractions([this.r0]); }
 
-  execute(rf: LikeRegisterFile): ExecutionResult[] {
+  execute(rf: HasRegisters) {
     const generatedValue = this.a1 + Math.floor(Math.random() * (this.b2 - this.a1));
 
     return [
