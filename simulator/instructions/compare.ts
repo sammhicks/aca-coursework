@@ -18,7 +18,7 @@ export class Compare extends ArithmeticInstruction {
 
   get effects() { return new ArithmeticInteractions([this.r0]); }
 
-  execute(rf: HasRegisters): [RegisterWriter] {
+  execute(rf: ReadableRegisterFile): [RegisterWriter] {
     return [
       new RegisterWriter(
         this.r0,

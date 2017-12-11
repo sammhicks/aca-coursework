@@ -1,7 +1,7 @@
 import { MemoryInstruction } from "./instruction";
 import { Register, Literal } from "../components/basic-types";
 import { RegisterWriter } from "../components/execution-result";
-import { HasRegisters, HasMemory, lookupRegisters } from "../components/register-file";
+import { HasRegisters, HasMemory, getRegisters } from "../components/register-file";
 import { MemoryInteractions } from "../components/instruction-interactions";
 
 export class Load extends MemoryInstruction {
@@ -21,7 +21,7 @@ export class Load extends MemoryInstruction {
     return [
       new RegisterWriter(
         this.r0,
-        rf.readMemory(lookupRegisters(rf, this.r12).reduce((acc, item) => acc + item, this.i3)))
+        rf.readMemory(getRegisters(rf, this.r12).reduce((acc, item) => acc + item, this.i3)))
     ];
   }
 };

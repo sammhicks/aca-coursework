@@ -1,7 +1,7 @@
 import { ArithmeticInstruction } from "./instruction";
 import { Register, Literal } from "../components/basic-types";
 import { RegisterWriter } from "../components/execution-result";
-import { HasRegisters, lookupRegisters } from "../components/register-file";
+import { ReadableRegisterFile, getRegisters } from "../components/register-file";
 import { ArithmeticInteractions } from "../components/instruction-interactions";
 
 export class Add extends ArithmeticInstruction {
@@ -17,11 +17,11 @@ export class Add extends ArithmeticInstruction {
 
   get effects() { return new ArithmeticInteractions([this.r0]); }
 
-  execute(rf: HasRegisters): [RegisterWriter] {
+  execute(rf: ReadableRegisterFile): [RegisterWriter] {
     return [
       new RegisterWriter(
         this.r0,
-        lookupRegisters(rf, this.r12).reduce((acc, item) => acc + item, this.i3))
+        getRegisters(rf, this.r12).reduce((acc, item) => acc + item, this.i3))
     ];
   }
 };

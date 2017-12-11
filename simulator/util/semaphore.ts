@@ -1,14 +1,14 @@
-import { Counter } from "./counter";
+import { Comparable, compare } from "./compare";
 import { DeepCopy } from "./deep-copy";
 
-export class Semaphore extends Counter implements DeepCopy<Semaphore> {
-  constructor(size: number, value: number = 0) {
-    super(size, value);
+export class Semaphore implements Comparable<Semaphore>, DeepCopy<Semaphore> {
+  private _value: number;
+
+  constructor(value: number = 0) {
+    this._value = value;
   }
 
-  equals(other: Semaphore) {
-    return this.value == other.value;
-  }
+  compare(other: Semaphore) { return compare(this._value, other._value); }
 
-  deepCopy() { return new Semaphore(this.size, this.value); }
+  deepCopy() { return new Semaphore(this._value); }
 }

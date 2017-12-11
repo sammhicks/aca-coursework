@@ -1,0 +1,22 @@
+From Queue to Reservation:
+  Dependencies:
+    Increment #Waiting if Desired Version == Current Version
+    Set My Value to Desired Version
+  Stores:
+    Set My Value to Desired Version
+    Increment Desired Version
+
+Rules from Reservation to Execution:
+  Dependencies: My Value == Current
+  Store: #Waiting == 0 && Current Version == My Value
+
+From Reservation to Execution:
+  Dependencies:
+    Decrement #Waiting
+
+When Write comes in:
+  Increment Current Version
+  Recalculate Waiting:
+      Increment if:
+        Dependency
+        My Value == Current Version

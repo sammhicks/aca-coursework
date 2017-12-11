@@ -1,6 +1,6 @@
 import { MiscInstruction } from "./instruction";
 import { Halter } from "../components/execution-result";
-import { Halts } from "../components/register-file";
+import { HasRegisterFileComponents } from "../components/register-file";
 import { MiscInteractions } from "../components/instruction-interactions";
 
 export class Halt extends MiscInstruction {
@@ -14,5 +14,5 @@ export class Halt extends MiscInstruction {
 
   get effects() { return new MiscInteractions(); }
 
-  execute(rf: Halts): [Halter] { return [new Halter()]; }
+  execute(rf: HasRegisterFileComponents): [Halter] { return [new Halter()]; }
 };

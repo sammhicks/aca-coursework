@@ -22,7 +22,7 @@ export class CompareImmediate extends ArithmeticInstruction {
     return [
       new RegisterWriter(
         this.r0,
-        compare(rf.readRegister(this.r1), this.i2))
+        compare(rf.getRegister(this.r1), this.i2))
     ];
   }
 };

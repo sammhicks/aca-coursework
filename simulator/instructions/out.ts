@@ -16,7 +16,7 @@ export class Out extends IOInstruction {
 
   get effects() { return new IOInteractions([]); }
 
-  execute(rf: HasRegisters) {
+  execute(rf: ReadableRegisterFile) {
     const self = this;
     return [new ExternalAction(() => console.log("Out: %s (%d) = %d", self.label, self.r0, rf.readRegister(self.r0)))];
   }

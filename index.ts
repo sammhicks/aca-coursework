@@ -1,4 +1,4 @@
-import * as process from "process"
+/*import * as process from "process"
 
 import { loadInstructions } from "./simulator/components/instruction-loader";
 import { InstructionCategories as IC } from "./simulator/instructions/instruction";
@@ -59,3 +59,4 @@ console.log("Clock Cycles per Instruction:", (clockCycleCount / instructionsExec
 console.log("Instructions per Clock Cycle:", (instructionsExecutedCount / clockCycleCount).toFixed(3));
 
 process.exit();
+*/

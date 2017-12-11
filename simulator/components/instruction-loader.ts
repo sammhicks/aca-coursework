@@ -21,7 +21,6 @@ import { Random } from "../instructions/random";
 import { Log } from "../instructions/log";
 import { Out } from "../instructions/out";
 
-import { NoOp } from "../instructions/noop";
 import { Halt } from "../instructions/halt";
 
 var pneumonicTable: { [pneumonic: string]: typeof Instruction; } = {};
@@ -45,7 +44,6 @@ pneumonicTable[Random.pneumonic] = Random;
 pneumonicTable[Log.pneumonic] = Log;
 pneumonicTable[Out.pneumonic] = Out;
 
-pneumonicTable[NoOp.pneumonic] = NoOp;
 pneumonicTable[Halt.pneumonic] = Halt;
 
 

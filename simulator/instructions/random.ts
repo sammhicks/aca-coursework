@@ -17,7 +17,7 @@ export class Random extends IOInstruction {
 
   get effects() { return new IOInteractions([this.r0]); }
 
-  execute(rf: HasRegisters) {
+  execute(rf: ReadableRegisterFile) {
     const generatedValue = this.a1 + Math.floor(Math.random() * (this.b2 - this.a1));
 
     return [

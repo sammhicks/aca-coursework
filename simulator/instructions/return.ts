@@ -12,5 +12,5 @@ export class Return extends BranchInstruction {
 
   get effects() { return new BranchInteractions(true, []); }
 
-  execute(rf: HasRegisters) { return [new PCWriter(rf.readRegister(LR_INDEX))]; }
+  execute(rf: ReadableRegisterFile) { return [new PCWriter(rf.readRegister(LR_INDEX))]; }
 };

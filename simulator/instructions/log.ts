@@ -14,7 +14,7 @@ export class Log extends IOInstruction {
 
   get effects() { return new IOInteractions([]); }
 
-  execute(rf: HasRegisters) {
+  execute(rf: ReadableRegisterFile) {
     const self = this;
     return [new ExternalAction(() => console.log("Log: \"%s\"", self.message))];
   }

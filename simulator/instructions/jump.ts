@@ -15,5 +15,5 @@ export class Jump extends BranchInstruction {
 
   get effects() { return new BranchInteractions(true, []); }
 
-  execute(rf: HasPC & HasRegisters): [PCWriter] { return [new PCWriter(rf.pc + this.i0)]; }
+  execute(rf: ReadableRegisterFile): [PCWriter] { return [new PCWriter(rf.pc + this.i0)]; }
 };

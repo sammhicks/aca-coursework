@@ -1,32 +1,48 @@
 import { Literal, Register } from "./basic-types";
-import { HasRegisterFileComponents, HasPC, HasRegisters, HasMemory, PerformsExternalInteractions, Halts } from "./register-file";
+import { HasWritablePC, HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, WritableRegisterFile } from "./register-file";
 
 export interface ExecutionResult {
-  consume(rf: HasRegisterFileComponents): void;
+  consume(rf: WritableRegisterFile): void;
 }
 
 export class PCWriter implements ExecutionResult {
   constructor(readonly val: Literal) { }
 
-  consume(rf: HasPC) { rf.pc = this.val; }
+  consume(rf: HasWritablePC) { rf.updatePC(this.val); }
+}
+
+export class PCReleaser implements ExecutionResult {
+  consume(rf: HasWritablePC) { rf.releasePC(); }
 }
 
 export class RegisterWriter implements ExecutionResult {
   constructor(readonly reg: Register, readonly val: Literal) { }
 
-  consume(rf: HasRegisters) { rf.writeRegister(this.reg, this.val) }
+  consume(rf: HasWritableRegisters) { rf.updateRegister(this.reg, this.val) }
+}
+
+export class RegisterReleaser implements ExecutionResult {
+  constructor(readonly reg: Register) { }
+
+  consume(rf: HasWritableRegisters) { rf.releaseRegister(this.reg) }
 }
 
 export class MemoryWriter implements ExecutionResult {
   constructor(readonly addr: Literal, readonly val: Literal) { }
 
-  consume(rf: HasMemory) { rf.writeMemory(this.addr, this.val); }
+  consume(rf: HasWritableMemory) { rf.writeMemory(this.addr, this.val); }
+}
+
+export class MemoryReleaser implements ExecutionResult {
+  constructor(readonly addr: Literal) { }
+
+  consume(rf: HasWritableMemory) { rf.releaseMemory(this.addr); }
 }
 
 export class ExternalAction implements ExecutionResult {
   constructor(readonly action: () => void) { }
 
-  consume(rf: PerformsExternalInteractions) { rf.performExternalAction(this.action); }
+  consume(rf: PerformsExternalActions) { rf.performExternalAction(this.action); }
 }
 
 export class Halter implements ExecutionResult {

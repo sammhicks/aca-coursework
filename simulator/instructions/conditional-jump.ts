@@ -18,7 +18,7 @@ export class ConditionalJump extends BranchInstruction {
 
   get effects() { return new BranchInteractions(true, []); }
 
-  execute(rf: HasPC & HasRegisters) {
+  execute(rf: ReadableRegisterFile) {
     const conditionMatchesVariable = this.cond == rf.readRegister(this.r1);
     const withInversion = conditionMatchesVariable != this.inv;
 

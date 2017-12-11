@@ -1,7 +1,7 @@
 import { BranchInstruction } from "./instruction";
 import { Literal } from "../components/basic-types";
 import { RegisterWriter, PCWriter } from "../components/execution-result";
-import { LR_INDEX, HasPC, HasRegisters } from "../components/register-file";
+import { LR_INDEX, ReadableRegisterFile } from "../components/register-file";
 import { BranchInteractions } from "../components/instruction-interactions";
 
 export class Branch extends BranchInstruction {
@@ -15,7 +15,7 @@ export class Branch extends BranchInstruction {
 
   get effects() { return new BranchInteractions(true, [LR_INDEX]); }
 
-  execute(rf: HasPC & HasRegisters) {
+  execute(rf: ReadableRegisterFile) {
     return [
       new PCWriter(this.i0),
       new RegisterWriter(LR_INDEX, rf.pc)

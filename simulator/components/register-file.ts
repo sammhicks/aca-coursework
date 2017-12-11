@@ -1,66 +1,76 @@
-import { Address, PC, Register, Literal, Memory, Registers } from "./basic-types";
+import { Address, PC, Register, Literal, Registers, Memory } from "./basic-types";
 
 export const LR_INDEX = 0;
-
-export function lookupRegisters(rf: HasRegisters, rs: Register[]): Literal[] { return rs.map(r => rf.readRegister(r)); }
 
 export interface HasRegisterFileComponents { }
 
 export interface HasPC extends HasRegisterFileComponents {
-  pc: PC;
+  getPC(): PC;
 }
 
 export interface HasRegisters extends HasRegisterFileComponents {
-  readRegister(reg: Register): Literal;
-  writeRegister(reg: Register, val: Literal): void;
+  getRegister(reg: Register): Literal;
 }
 
 export interface HasMemory extends HasRegisterFileComponents {
   readMemory(addr: Address): Literal;
-  writeMemory(addr: Address, val: Literal): void;
 }
 
-export interface PerformsExternalInteractions extends HasRegisterFileComponents {
+export interface ReadableRegisterFile extends HasPC, HasRegisters, HasMemory { }
+
+export function getRegisters(rf: HasRegisters, regs: Register[]) { return regs.map(reg => rf.getRegister(reg)); }
+
+export interface HasWritablePC {
+  updatePC(pc: PC): void;
+  releasePC(): void;
+}
+
+export interface HasWritableRegisters {
+  updateRegister(reg: Register, val: Literal): void;
+  releaseRegister(reg: Register): void;
+}
+
+export interface HasWritableMemory {
+  writeMemory(addr: Address, val: Literal): void;
+  releaseMemory(addr: Address): void;
+}
+
+export interface PerformsExternalActions {
   performExternalAction(action: () => void): void;
 }
 
-export interface Halts extends HasRegisterFileComponents {
-  isRunning(): boolean;
+export interface Halts {
   halt(): void;
 }
 
-export class RegisterFile implements HasRegisters, HasMemory, PerformsExternalInteractions, Halts {
+export interface WritableRegisterFile extends HasWritablePC, HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts {
+}
+
+
+export class RegisterFile implements ReadableRegisterFile, WritableRegisterFile {
   private _pc: PC;
   private _registers: Registers;
   private _memory: Memory;
-  private _isRunning: boolean;
 
   constructor() {
     this._pc = 0;
     this._registers = [];
     this._memory = [];
-    this._isRunning = true;
   }
 
-  get pc(): PC { return this._pc; }
+  getPC() { return this._pc; }
+  updatePC(pc: PC) { this._pc = pc; }
+  releasePC() { }
 
-  set pc(pc: PC) { this._pc = pc; }
+  getRegister(reg: Register) { return this._registers[reg]; }
+  updateRegister(reg: Register, val: Literal) { this._registers[reg] = val; }
+  releaseRegister(reg: Register) { }
 
+  readMemory(addr: Address) { return this._memory[addr]; }
+  writeMemory(addr: Address, val: Literal) { this._memory[addr] = val; }
+  releaseMemory(addr: Address) { }
 
-  readRegister(r: Register): Literal { return this._registers[r]; }
+  performExternalAction(action: () => void) { action(); }
 
-  writeRegister(reg: Register, val: Literal): void { this._registers[reg] = val; }
-
-
-  readMemory(addr: Literal) { return this._memory[addr]; }
-
-  writeMemory(addr: Literal, val: Literal): void { this._memory[addr] = val; }
-
-
-  performExternalAction(action: () => void): void { action(); }
-
-
-  isRunning(): boolean { return this._isRunning; }
-
-  halt(): void { this._isRunning = false; }
+  halt() { }
 }
