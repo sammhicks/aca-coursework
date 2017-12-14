@@ -1,27 +1,27 @@
 import { readFileSync } from "fs"
 
 import { Instruction } from "../instructions/instruction";
-import { Add } from "../instructions/add";
-import { Subtract } from "../instructions/subtract";
-import { Multiply } from "../instructions/multiply";
-import { Compare } from "../instructions/compare";
-import { CompareImmediate } from "../instructions/compare-immediate";
+import { Add } from "../instructions/arithmetic/add";
+import { Subtract } from "../instructions/arithmetic/subtract";
+import { Multiply } from "../instructions/arithmetic/multiply";
+import { Compare } from "../instructions/arithmetic/compare";
+import { CompareImmediate } from "../instructions/arithmetic/compare-immediate";
 
-import { Load } from "../instructions/load";
-import { Store } from "../instructions/store";
+import { Load } from "../instructions/memory/load";
+import { Store } from "../instructions/memory/store";
 
-import { Branch } from "../instructions/branch";
-import { Jump } from "../instructions/jump";
-import { ConditionalJump } from "../instructions/conditional-jump";
+import { Branch } from "../instructions/branch/branch";
+import { Jump } from "../instructions/branch/jump";
+import { ConditionalJump } from "../instructions/branch/conditional-jump";
 
-import { Return } from "../instructions/return";
+import { Return } from "../instructions/branch/return";
 
-import { Random } from "../instructions/random";
+import { Random } from "../instructions/io/random";
 
-import { Log } from "../instructions/log";
-import { Out } from "../instructions/out";
+import { Log } from "../instructions/io/log";
+import { Out } from "../instructions/io/out";
 
-import { Halt } from "../instructions/halt";
+import { Halt } from "../instructions/misc/halt";
 
 var pneumonicTable: { [pneumonic: string]: typeof Instruction; } = {};
 pneumonicTable[Add.pneumonic] = Add;

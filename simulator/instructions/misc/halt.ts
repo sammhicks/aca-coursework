@@ -12,7 +12,7 @@ export class Halt extends MiscInstruction {
 
   getWriteRequirements() { return [] as never[]; }
 
-  execute(rf: HasRegisterFileComponents): [Halter] { return [new Halter()]; }
+  execute(): [Halter] { return [new Halter()]; }
 
   expectedPC(pc: number): PC { return pc; }
 };

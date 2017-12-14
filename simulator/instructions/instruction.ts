@@ -1,11 +1,10 @@
 import { PC } from "../components/basic-types";
 import { ExecutionResult, BranchPredictionError, PCWriter, RegisterWriter, MemoryWriter, ExternalAction, Halter } from "../components/execution-result";
-import { HasRegisterFileComponents, HasPC, HasRegisters, HasMemory, RegisterFile } from "../components/register-file";
+import { HasPC, HasRegisters, HasMemory, RegisterFile } from "../components/register-file";
 import { RegisterFileSync } from "../components/register-file-sync";
-import { ReadRequirement, WriteRequirement, ReadsPC, SetsPC, ReadsRegister, SetsRegister, ReadsFromMemory, WritesToMemory, EmptyReadRequirement, EmptyWriteRequirement } from "../components/instruction-requirements";
+import { ReadRequirement, WriteRequirement, ReadsPC, SetsPC, ReadsRegister, SetsRegister, ReadsFromMemory, WritesToMemory } from "../components/instruction-requirements";
 
 export abstract class Instruction {
-  readonly name: string;
 };
 
 export abstract class DecodedInstruction<ReadRequirements extends ReadRequirement, WriteRequirements extends WriteRequirement, DataSource, Results extends ExecutionResult[] | BranchPredictionError> {
@@ -32,4 +31,4 @@ export abstract class BranchInstruction extends DecodedInstruction<ReadsPC | Rea
 
 export abstract class IOInstruction extends DecodedInstruction<ReadsRegister, SetsRegister, HasRegisters, (RegisterWriter | ExternalAction)[]>{ }
 
-export abstract class MiscInstruction extends DecodedInstruction<never, never, HasRegisterFileComponents, [Halter]> { }
+export abstract class MiscInstruction extends DecodedInstruction<never, never, never, [Halter]> { }
