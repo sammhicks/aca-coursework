@@ -19,4 +19,4 @@ When Write comes in:
   Recalculate Waiting:
       Increment if:
         Dependency
-        My Value == Current Version
+          My Value == Current Version

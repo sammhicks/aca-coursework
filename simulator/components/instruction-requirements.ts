@@ -1,49 +1,157 @@
 import { Register, Literal } from "./basic-types";
-import { HasPC, HasRegisters, HasMemory, ReadableRegisterFile, getRegisters } from "./register-file";
-import { RegisterFileItemSync, PCSync, RegisterSync, MemorySync, RegisterFileSync } from "./register-file-sync";
+import { ExecutionResult, PCReleaser, RegisterReleaser, MemoryReleaser, NoOpResult } from "./execution-result";
+import { HasRegisters, HasMemory, getRegisters } from "./register-file";
+import { RegisterFileItemSync, PCSync, RegisterSync, MemorySlot, MemorySync } from "./register-file-sync";
 import { areEqual } from "../util/compare";
 import { Semaphore } from "../util/semaphore";
 
 export interface InstructionRequirement {
-  registerReads(rfs: RegisterFileSync): void;
+  updateSync(): void;
 
-  met(rf: ReadableRegisterFile, rfs: RegisterFileSync): boolean;
+  isMet(): boolean;
 }
 
-export class ReadsPC implements InstructionRequirement {
-  constructor(readonly target: Semaphore) { }
-
-  registerReads(rfs: PCSync) { rfs.getPCSync().readersCount += 1; }
-
-  met(rf: HasPC, rfs: PCSync) { return areEqual(this.target, rfs.getPCSync().currentState); }
+export interface ReadRequirement extends InstructionRequirement {
+  getResult(): ExecutionResult;
 }
 
-export class SetsPC extends ReadsPC {
-  met(rf: HasPC, rfs: PCSync) { return super.met(rf, rfs) && rfs.getPCSync().readersCount == 0; }
-}
+export interface WriteRequirement extends InstructionRequirement { }
 
 
-export class ReadsRegister implements InstructionRequirement {
-  constructor(readonly reg: Register, readonly target: Semaphore) { }
+abstract class BaseSingleValue {
+  protected _sync: RegisterFileItemSync;
+  protected _target: Semaphore;
+  protected _alreadyUpdatedSync: boolean;
 
-  registerReads(rfs: RegisterSync) { rfs.getRegisterSync(this.reg).readersCount += 1; }
-
-  met(rf: HasRegisters, rfs: RegisterSync) { return areEqual(this.target, rfs.getRegisterSync(this.reg).currentState); }
-}
-
-export class SetsRegister extends ReadsRegister {
-  met(rf: HasRegisters, rfs: RegisterSync) { return super.met(rf, rfs) && rfs.getRegisterSync(this.reg).readersCount == 0; }
-}
-
-
-export class ReadsMemory implements InstructionRequirement {
-  constructor(readonly addrRegs: Register[], readonly addrOffset: Literal) { }
-
-  getAddress(rf: HasRegisters) {
-    return getRegisters(rf, this.addrRegs).reduce((acc, item) => acc + item, this.addrOffset);
+  constructor(sync: RegisterFileItemSync) {
+    this._sync = sync;
+    this._target = sync.futureState;
+    this._alreadyUpdatedSync = false;
   }
 
-  met(rf: HasRegisters & HasMemory, rfs: MemorySync) {
+  isMet() { return areEqual(this._sync.currentState, this._target); }
+}
 
+abstract class ReadsSingleValue extends BaseSingleValue implements ReadRequirement {
+  updateSync() {
+    if (!this._alreadyUpdatedSync && this.isMet()) {
+      this._alreadyUpdatedSync;
+      this._sync.readersCount += 1;
+    }
   }
+
+  abstract getResult(): ExecutionResult;
+}
+
+abstract class SetsSingleValue extends BaseSingleValue implements WriteRequirement {
+  updateSync() {
+    if (!this._alreadyUpdatedSync) {
+      this._alreadyUpdatedSync = true;
+      this._sync.futureState.increment();
+    }
+  }
+
+  isMet() { return super.isMet() && this._sync.readersCount == 0; }
+}
+
+export class ReadsPC extends ReadsSingleValue {
+  constructor(sync: PCSync) { super(sync.getPCSync()); }
+
+  getResult() { return new PCReleaser(); }
+}
+
+export class SetsPC extends SetsSingleValue {
+  constructor(sync: PCSync) { super(sync.getPCSync()); }
+}
+
+
+export class ReadsRegister extends ReadsSingleValue {
+  constructor(sync: RegisterSync, readonly reg: Register) { super(sync.getRegisterSync(reg)); }
+
+  getResult() { return new RegisterReleaser(this.reg); }
+}
+
+export class SetsRegister extends SetsSingleValue {
+  constructor(sync: RegisterSync, reg: Register) { super(sync.getRegisterSync(reg)); }
+}
+
+
+abstract class BaseMemoryRequirement {
+  protected _rf: HasRegisters & HasMemory;
+  protected _regReqs: ReadsRegister[];
+  protected _sync: MemorySync;
+  protected _target: Semaphore[];
+  protected _updatedSyncs: boolean[];
+
+  constructor(sync: RegisterSync & MemorySync, rf: HasRegisters & HasMemory, readonly addrRegs: Register[], readonly addrOffset: Literal) {
+    this._rf = rf;
+    this._regReqs = addrRegs.map(reg => new ReadsRegister(sync, reg));
+    this._sync = sync;
+    this._target = sync.mapMemorySyncs(sync => sync.futureState);
+    this._updatedSyncs = sync.mapMemorySyncs(() => false);
+  }
+
+  protected getAddress() { return getRegisters(this._rf, this.addrRegs).reduce((acc, item) => acc + item, this.addrOffset); }
+
+  protected getMemorySlot() { return this._sync.mapAddress(this.getAddress()); }
+
+  isMet() { return this._regReqs.every(req => req.isMet()) && areEqual(this._sync.getMemorySync(this.getMemorySlot()).currentState, this._target[this.getMemorySlot()]); }
+}
+
+export class ReadsFromMemory extends BaseMemoryRequirement implements ReadRequirement {
+  updateSync() {
+    this._regReqs.forEach(req => req.updateSync());
+
+    // If we know what the address is
+    if (this._regReqs.every(sync => sync.isMet())) {
+      const self = this;
+      this._sync.mapMemorySyncs(function (sync: RegisterFileItemSync, slot: MemorySlot) {
+        if (self._updatedSyncs[slot]) {
+          self._updatedSyncs[slot] = false;
+          if (slot == self.getMemorySlot()) {
+            sync.readersCount -= 1;
+          }
+        }
+      });
+    } else {
+      const self = this;
+      this._sync.mapMemorySyncs(function (sync: RegisterFileItemSync, slot: MemorySlot) {
+        if (!self._updatedSyncs[slot] && areEqual(self._sync.getMemorySync(slot).currentState, self._target[slot])) {
+          self._updatedSyncs[slot] = true;
+          sync.readersCount += 1;
+        }
+      });
+    }
+  }
+
+  getResult() { return new MemoryReleaser(this.getAddress()); }
+}
+
+export class WritesToMemory extends BaseMemoryRequirement {
+  updateSync() {
+    this._regReqs.forEach(req => req.updateSync());
+
+    // If we know what the address is
+    if (this._regReqs.every(sync => sync.isMet())) {
+      const self = this;
+      this._sync.mapMemorySyncs(function (sync: RegisterFileItemSync, slot: MemorySlot) {
+        if (self._updatedSyncs[slot]) {
+          self._updatedSyncs[slot] = false;
+          if (slot != self.getMemorySlot()) {
+            sync.currentState.increment();
+          }
+        }
+      });
+    } else {
+      const self = this;
+      this._sync.mapMemorySyncs(function (sync: RegisterFileItemSync, slot: MemorySlot) {
+        if (!self._updatedSyncs[slot]) {
+          self._updatedSyncs[slot] = true;
+          sync.futureState.increment();
+        }
+      });
+    }
+  }
+
+  isMet() { return super.isMet() && this._sync.getMemorySync(this.getMemorySlot()).readersCount == 0; }
 }

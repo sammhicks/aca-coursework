@@ -10,5 +10,7 @@ export class Semaphore implements Comparable<Semaphore>, DeepCopy<Semaphore> {
 
   compare(other: Semaphore) { return compare(this._value, other._value); }
 
+  increment() { this._value += 1; }
+
   deepCopy() { return new Semaphore(this._value); }
 }

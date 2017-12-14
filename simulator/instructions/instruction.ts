@@ -1,20 +1,19 @@
-import { Literal } from "../components/basic-types";
+import { PC } from "../components/basic-types";
 import { ExecutionResult, BranchPredictionError, PCWriter, RegisterWriter, MemoryWriter, ExternalAction, Halter } from "../components/execution-result";
-import { HasRegisterFileComponents, HasPC, HasRegisters, HasMemory } from "../components/register-file";
-import { InstructionInteractions, ArithmeticInteractions, MemoryInteractions, BranchInteractions, IOInteractions, MiscInteractions } from "../components/instruction-interactions";
+import { HasRegisterFileComponents, HasPC, HasRegisters, HasMemory, RegisterFile } from "../components/register-file";
+import { RegisterFileSync } from "../components/register-file-sync";
+import { ReadRequirement, WriteRequirement, ReadsPC, SetsPC, ReadsRegister, SetsRegister, ReadsFromMemory, WritesToMemory, EmptyReadRequirement, EmptyWriteRequirement } from "../components/instruction-requirements";
 
 export abstract class Instruction {
   readonly name: string;
 };
 
-export abstract class DecodedInstruction<Requirements extends InstructionInteractions, Effects extends InstructionInteractions, DataSource, Results extends ExecutionResult[] | BranchPredictionError> {
+export abstract class DecodedInstruction<ReadRequirements extends ReadRequirement, WriteRequirements extends WriteRequirement, DataSource, Results extends ExecutionResult[] | BranchPredictionError> {
   abstract get duration(): number;
 
-  get halts(): boolean { return false; }
+  abstract getReadRequirements(sync: RegisterFileSync, rf: RegisterFile): ReadRequirements[];
 
-  abstract get requirements(): Requirements;
-
-  abstract get effects(): Effects;
+  abstract getWriteRequirements(sync: RegisterFileSync, rf: RegisterFile): WriteRequirements[];
 
   abstract execute(rf: DataSource): Results;
 
@@ -22,15 +21,15 @@ export abstract class DecodedInstruction<Requirements extends InstructionInterac
     return Array.isArray(executionResults);
   }
 
-  expectedPC(pc: number): Literal { return pc + 1; }
+  expectedPC(pc: PC): PC { return pc + 1; }
 }
 
-export abstract class ArithmeticInstruction extends DecodedInstruction<ArithmeticInteractions, ArithmeticInteractions, HasRegisters, [RegisterWriter]> { }
+export abstract class ArithmeticInstruction extends DecodedInstruction<ReadsRegister, SetsRegister, HasRegisters, [RegisterWriter]> { }
 
-export abstract class MemoryInstruction extends DecodedInstruction<MemoryInteractions, MemoryInteractions, HasRegisters | HasMemory, [RegisterWriter | MemoryWriter]> { }
+export abstract class MemoryInstruction extends DecodedInstruction<ReadsRegister | ReadsFromMemory, SetsRegister | WritesToMemory, HasRegisters | HasMemory, [RegisterWriter | MemoryWriter]> { }
 
-export abstract class BranchInstruction extends DecodedInstruction<BranchInteractions, BranchInteractions, HasPC | HasRegisters, (PCWriter | RegisterWriter)[] | BranchPredictionError> { }
+export abstract class BranchInstruction extends DecodedInstruction<ReadsPC | ReadsRegister, SetsPC | SetsRegister, HasPC | HasRegisters, (PCWriter | RegisterWriter)[] | BranchPredictionError> { }
 
-export abstract class IOInstruction extends DecodedInstruction<IOInteractions, IOInteractions, HasRegisters, (RegisterWriter | ExternalAction)[]>{ }
+export abstract class IOInstruction extends DecodedInstruction<ReadsRegister, SetsRegister, HasRegisters, (RegisterWriter | ExternalAction)[]>{ }
 
-export abstract class MiscInstruction extends DecodedInstruction<MiscInteractions, MiscInteractions, HasRegisterFileComponents, [Halter]> { }
+export abstract class MiscInstruction extends DecodedInstruction<never, never, HasRegisterFileComponents, [Halter]> { }

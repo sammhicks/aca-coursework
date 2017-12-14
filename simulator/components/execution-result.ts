@@ -1,8 +1,12 @@
-import { Literal, Register } from "./basic-types";
-import { HasWritablePC, HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, WritableRegisterFile } from "./register-file";
+import { PC, Literal, Register } from "./basic-types";
+import { HasWritablePC, HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, WritableRegisterFile, HandlesBranchPredictionError } from "./register-file";
 
 export interface ExecutionResult {
   consume(rf: WritableRegisterFile): void;
+}
+
+export class NoOpResult {
+  consume() { }
 }
 
 export class PCWriter implements ExecutionResult {
@@ -50,5 +54,5 @@ export class Halter implements ExecutionResult {
 }
 
 export class BranchPredictionError {
-  constructor(public writes: ExecutionResult[]) { };
+  constructor(readonly pc: PC) { };
 };
