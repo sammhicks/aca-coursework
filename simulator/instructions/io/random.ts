@@ -1,8 +1,8 @@
 import { IOInstruction } from "../instruction";
 import { Register, Literal } from "../../components/basic-types";
 import { ExternalAction, RegisterWriter } from "../../components/execution-result";
-import { ReadsRegister, SetsRegister } from "../../components/instruction-requirements"
-import { getRegisters, HasRegisters } from "../../components/register-file";
+import { SetsRegister } from "../../components/instruction-requirements"
+import { HasRegisters } from "../../components/register-file";
 import { RegisterSync } from "../../components/register-file-sync";
 
 export class Random extends IOInstruction {

@@ -1,5 +1,5 @@
 import { PC, Literal, Register } from "./basic-types";
-import { HasWritablePC, HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, WritableRegisterFile, HandlesBranchPredictionError } from "./register-file";
+import { HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, WritableRegisterFile, HandlesBranchPredictionError } from "./register-file";
 
 export interface ExecutionResult {
   consume(rf: WritableRegisterFile): void;
@@ -7,16 +7,6 @@ export interface ExecutionResult {
 
 export class NoOpResult {
   consume() { }
-}
-
-export class PCWriter implements ExecutionResult {
-  constructor(readonly val: Literal) { }
-
-  consume(rf: HasWritablePC) { rf.updatePC(this.val); }
-}
-
-export class PCReleaser implements ExecutionResult {
-  consume(rf: HasWritablePC) { rf.releasePC(); }
 }
 
 export class RegisterWriter implements ExecutionResult {
@@ -53,6 +43,13 @@ export class Halter implements ExecutionResult {
   consume(rf: Halts) { rf.halt(); }
 }
 
-export class BranchPredictionError {
-  constructor(readonly pc: PC) { };
-};
+export class BranchPredictionError implements ExecutionResult {
+  constructor(readonly pc: PC) { }
+
+  consume(rf: HandlesBranchPredictionError) { rf.handleBranchPredictionError(this.pc); }
+}
+
+
+export interface ExecutionResultsHandler {
+  handleExecutionResults(results: ExecutionResult[]): void;
+}

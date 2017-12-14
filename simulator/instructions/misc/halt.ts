@@ -1,6 +1,5 @@
 import { MiscInstruction } from "../instruction";
 import { Halter } from "../../components/execution-result";
-import { HasRegisterFileComponents } from "../../components/register-file";
 import { PC } from "../../components/basic-types";
 
 export class Halt extends MiscInstruction {
@@ -12,7 +11,9 @@ export class Halt extends MiscInstruction {
 
   getWriteRequirements() { return [] as never[]; }
 
-  execute(): [Halter] { return [new Halter()]; }
+  execute() { return [new Halter()]; }
+
+  get isNonSequential() { return true; }
 
   expectedPC(pc: number): PC { return pc; }
 };

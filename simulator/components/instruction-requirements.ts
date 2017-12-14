@@ -1,7 +1,7 @@
 import { Register, Literal } from "./basic-types";
-import { ExecutionResult, PCReleaser, RegisterReleaser, MemoryReleaser, NoOpResult } from "./execution-result";
+import { ExecutionResult, RegisterReleaser, MemoryReleaser } from "./execution-result";
 import { HasRegisters, HasMemory, getRegisters } from "./register-file";
-import { RegisterFileItemSync, PCSync, RegisterSync, MemorySlot, MemorySync } from "./register-file-sync";
+import { RegisterFileItemSync, RegisterSync, MemorySlot, MemorySync } from "./register-file-sync";
 import { areEqual } from "../util/compare";
 import { Semaphore } from "../util/semaphore";
 
@@ -18,21 +18,21 @@ export interface ReadRequirement extends InstructionRequirement {
 export interface WriteRequirement extends InstructionRequirement { }
 
 
-abstract class BaseSingleValue {
+abstract class RegisterInteraction {
   protected _sync: RegisterFileItemSync;
   protected _target: Semaphore;
   protected _alreadyUpdatedSync: boolean;
 
-  constructor(sync: RegisterFileItemSync) {
-    this._sync = sync;
-    this._target = sync.futureState;
+  constructor(sync: RegisterSync, readonly reg: Register) {
+    this._sync = sync.getRegisterSync(reg);
+    this._target = sync.getRegisterSync(reg).futureState;
     this._alreadyUpdatedSync = false;
   }
 
   isMet() { return areEqual(this._sync.currentState, this._target); }
 }
 
-abstract class ReadsSingleValue extends BaseSingleValue implements ReadRequirement {
+export class ReadsRegister extends RegisterInteraction implements ReadRequirement {
   updateSync() {
     if (!this._alreadyUpdatedSync && this.isMet()) {
       this._alreadyUpdatedSync;
@@ -40,10 +40,10 @@ abstract class ReadsSingleValue extends BaseSingleValue implements ReadRequireme
     }
   }
 
-  abstract getResult(): ExecutionResult;
+  getResult() { return new RegisterReleaser(this.reg); }
 }
 
-abstract class SetsSingleValue extends BaseSingleValue implements WriteRequirement {
+export class SetsRegister extends RegisterInteraction implements WriteRequirement {
   updateSync() {
     if (!this._alreadyUpdatedSync) {
       this._alreadyUpdatedSync = true;
@@ -53,28 +53,6 @@ abstract class SetsSingleValue extends BaseSingleValue implements WriteRequireme
 
   isMet() { return super.isMet() && this._sync.readersCount == 0; }
 }
-
-export class ReadsPC extends ReadsSingleValue {
-  constructor(sync: PCSync) { super(sync.getPCSync()); }
-
-  getResult() { return new PCReleaser(); }
-}
-
-export class SetsPC extends SetsSingleValue {
-  constructor(sync: PCSync) { super(sync.getPCSync()); }
-}
-
-
-export class ReadsRegister extends ReadsSingleValue {
-  constructor(sync: RegisterSync, readonly reg: Register) { super(sync.getRegisterSync(reg)); }
-
-  getResult() { return new RegisterReleaser(this.reg); }
-}
-
-export class SetsRegister extends SetsSingleValue {
-  constructor(sync: RegisterSync, reg: Register) { super(sync.getRegisterSync(reg)); }
-}
-
 
 abstract class BaseMemoryRequirement {
   protected _rf: HasRegisters & HasMemory;

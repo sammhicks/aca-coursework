@@ -1,9 +1,5 @@
 import { IOInstruction } from "../instruction";
-import { Register, Literal } from "../../components/basic-types";
 import { ExternalAction } from "../../components/execution-result";
-import { ReadsRegister, SetsRegister } from "../../components/instruction-requirements"
-import { getRegisters, HasRegisters } from "../../components/register-file";
-import { RegisterSync } from "../../components/register-file-sync";
 
 export class Log extends IOInstruction {
   readonly message: string;

@@ -1,22 +1,22 @@
-import { ExecutionResult, PCWriter, RegisterWriter, MemoryWriter, ExternalAction, Halter, BranchPredictionError } from "./execution-result";
-import { ReadRequirement, WriteRequirement, ReadsPC, SetsPC, ReadsRegister, SetsRegister, ReadsFromMemory, WritesToMemory } from "./instruction-requirements";
-import { ReorderBufferSlot } from "./reorder-buffer";
+import { PC } from "./basic-types";
+import { ExecutionResult, RegisterWriter, MemoryWriter, ExternalAction, Halter, BranchPredictionError, ExecutionResultsHandler } from "./execution-result";
+import { ReadRequirement, WriteRequirement, ReadsRegister, SetsRegister, ReadsFromMemory, WritesToMemory } from "./instruction-requirements";
 import { DecodedInstruction } from "../instructions/instruction";
 import { Countdown } from "../util/countdown";
-import { HasPC, HasRegisters, HasMemory } from "./register-file";
+import { HasRegisters, HasMemory } from "./register-file";
 
 class IdleUnit { }
 
-class ActiveUnit<ReadRequirements extends ReadRequirement, WriteRequirements extends WriteRequirement, DataSource, Results extends ExecutionResult[] | BranchPredictionError> {
-  constructor(readonly rf: DataSource, readonly instruction: DecodedInstruction<ReadRequirements, WriteRequirements, DataSource, Results>, readonly reorderBufferSlot: ReorderBufferSlot) { }
+class ActiveUnit<ReadRequirements extends ReadRequirement, WriteRequirements extends WriteRequirement, DataSource, Result extends ExecutionResult> {
+  constructor(readonly rf: DataSource, readonly pc: PC, readonly instruction: DecodedInstruction<ReadRequirements, WriteRequirements, DataSource, Result>, readonly resultsHandlers: ExecutionResultsHandler[]) { }
 }
 
-type ExecutionUnitState<ReadRequirements extends ReadRequirement, WriteRequirements extends WriteRequirement, DataSource, Results extends ExecutionResult[] | BranchPredictionError> = IdleUnit | ActiveUnit<ReadRequirements, WriteRequirements, DataSource, Results>;
+type ExecutionUnitState<ReadRequirements extends ReadRequirement, WriteRequirements extends WriteRequirement, DataSource, Result extends ExecutionResult> = IdleUnit | ActiveUnit<ReadRequirements, WriteRequirements, DataSource, Result>;
 
-export class ExecutionUnit<ReadRequirements extends ReadRequirement, WriteRequirements extends WriteRequirement, DataSource, Results extends ExecutionResult[] | BranchPredictionError> extends Countdown {
-  private _state: ExecutionUnitState<ReadRequirements, WriteRequirements, DataSource, Results>;
+export class ExecutionUnit<ReadRequirements extends ReadRequirement, WriteRequirements extends WriteRequirement, DataSource, Result extends ExecutionResult> extends Countdown {
+  private _state: ExecutionUnitState<ReadRequirements, WriteRequirements, DataSource, Result>;
 
-  constructor(public category: { new(): DecodedInstruction<ReadRequirements, WriteRequirements, DataSource, Results>; }) {
+  constructor() {
     super();
 
     this._state = new IdleUnit();
@@ -26,15 +26,10 @@ export class ExecutionUnit<ReadRequirements extends ReadRequirement, WriteRequir
     return this._state instanceof IdleUnit;
   }
 
-  executeInstruction(rf: DataSource, instruction: DecodedInstruction<ReadRequirements, WriteRequirements, DataSource, Results>, reorderBufferSlot: ReorderBufferSlot) {
-    if (this._state instanceof IdleUnit) {
-      if (instruction instanceof this.category) {
-        this._state = new ActiveUnit<ReadRequirements, WriteRequirements, DataSource, Results>(rf, instruction, reorderBufferSlot);
-        reorderBufferSlot.updateInstructionHandler(this);
-        this.reset(instruction.duration);
-      } else {
-        throw Error("Execution Unit can't handle this instruction!");
-      }
+  executeInstruction(rf: DataSource, pc: PC, instruction: DecodedInstruction<ReadRequirements, WriteRequirements, DataSource, Result>, resultsHandlers: ExecutionResultsHandler[]) {
+    if (this.isAvailable) {
+      this._state = new ActiveUnit<ReadRequirements, WriteRequirements, DataSource, Result>(rf, pc, instruction, resultsHandlers);
+      this.reset(instruction.duration);
     } else {
       throw Error("Execution Unit not ready!");
     }
@@ -42,12 +37,10 @@ export class ExecutionUnit<ReadRequirements extends ReadRequirement, WriteRequir
 
   onCompletion(): void {
     if (this._state instanceof ActiveUnit) {
-      const instructionResults = this._state.instruction.execute(this._state.rf);
+      const instructionResults = this._state.instruction.execute(this._state.rf, this._state.pc);
 
-      if (DecodedInstruction.isSuccessfulExecution(instructionResults)) {
-        this._state.reorderBufferSlot.buffer(instructionResults);
-      } else {
-        //TODO - Handle Branch Failure
+      for (let index = 0; index < this._state.resultsHandlers.length; index++) {
+        this._state.resultsHandlers[index].handleExecutionResults(instructionResults);
       }
 
       this._state = new IdleUnit();
@@ -61,11 +54,11 @@ export class ExecutionUnit<ReadRequirements extends ReadRequirement, WriteRequir
   }
 }
 
-export type ArithmeticExecutionUnit = ExecutionUnit<ReadsRegister, SetsRegister, HasRegisters, [RegisterWriter]>;
-export type MemoryExecutionUnit = ExecutionUnit<ReadsRegister | ReadsFromMemory, SetsRegister | WritesToMemory, HasRegisters | HasMemory, [RegisterWriter | MemoryWriter]>;
-export type BranchExecutionUnit = ExecutionUnit<ReadsPC | ReadsRegister, SetsPC | SetsRegister, HasPC | HasRegisters, (PCWriter | RegisterWriter)[] | BranchPredictionError>;
-export type IOExecutionUnit = ExecutionUnit<ReadsRegister, SetsRegister, HasRegisters, (RegisterWriter | ExternalAction)[]>;
-export type MiscExecutionUnit = ExecutionUnit<never, never, never, [Halter]>;
+export type ArithmeticExecutionUnit = ExecutionUnit<ReadsRegister, SetsRegister, HasRegisters, RegisterWriter>;
+export type MemoryExecutionUnit = ExecutionUnit<ReadsRegister | ReadsFromMemory, SetsRegister | WritesToMemory, HasRegisters | HasMemory, RegisterWriter | MemoryWriter>;
+export type BranchExecutionUnit = ExecutionUnit<ReadsRegister, SetsRegister, HasRegisters, RegisterWriter | BranchPredictionError>;
+export type IOExecutionUnit = ExecutionUnit<ReadsRegister, SetsRegister, HasRegisters, RegisterWriter | ExternalAction>;
+export type MiscExecutionUnit = ExecutionUnit<never, never, never, Halter>;
 
 
 

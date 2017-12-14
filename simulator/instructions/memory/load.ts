@@ -1,7 +1,7 @@
 import { MemoryInstruction } from "../instruction";
 import { Register, Literal } from "../../components/basic-types";
 import { RegisterWriter } from "../../components/execution-result";
-import { ReadsRegister, SetsRegister, ReadsFromMemory, WritesToMemory } from "../../components/instruction-requirements"
+import { ReadsRegister, SetsRegister, ReadsFromMemory } from "../../components/instruction-requirements"
 import { getRegisters, HasRegisters, HasMemory } from "../../components/register-file";
 import { RegisterSync, MemorySync } from "../../components/register-file-sync";
 

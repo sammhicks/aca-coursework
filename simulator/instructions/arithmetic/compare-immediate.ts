@@ -2,7 +2,7 @@ import { ArithmeticInstruction } from "../instruction";
 import { Register, Literal } from "../../components/basic-types";
 import { RegisterWriter } from "../../components/execution-result";
 import { ReadsRegister, SetsRegister } from "../../components/instruction-requirements"
-import { getRegisters, HasRegisters } from "../../components/register-file";
+import { HasRegisters } from "../../components/register-file";
 import { RegisterSync } from "../../components/register-file-sync";
 import { compare } from "../../util/compare";
 
@@ -19,7 +19,7 @@ export class CompareImmediate extends ArithmeticInstruction {
 
   getWriteRequirements(sync: RegisterSync) { return [new SetsRegister(sync, this.r0)]; }
 
-  execute(rf: HasRegisters): [RegisterWriter] {
+  execute(rf: HasRegisters) {
     return [
       new RegisterWriter(
         this.r0,

@@ -1,7 +1,6 @@
-import { Address, PC, Register, Literal } from "./basic-types";
+import { Address, Register } from "./basic-types";
 import { initArray } from "../util/init-array";
 import { Semaphore } from "../util/semaphore";
-import { areEqual } from "../util/compare";
 
 export class RegisterFileItemSync {
   public currentState: Semaphore;
@@ -13,12 +12,6 @@ export class RegisterFileItemSync {
     this.futureState = new Semaphore(0);
     this.readersCount = 0;
   }
-}
-
-export interface PCSync {
-  getPCSync(): RegisterFileItemSync;
-
-  resetPCReadersCount(): void;
 }
 
 export interface RegisterSync {
@@ -39,21 +32,14 @@ export interface MemorySync {
   resetMemoryReadersCount(): void;
 }
 
-export class RegisterFileSync implements PCSync, RegisterSync, MemorySync {
-  private _pcSync: RegisterFileItemSync;
+export class RegisterFileSync implements RegisterSync, MemorySync {
   private _registerSync: RegisterFileItemSync[];
   private _memorySync: RegisterFileItemSync[];
 
   constructor(memorySlots: number) {
-    this._pcSync = new RegisterFileItemSync();
     this._registerSync = [];
     this._memorySync = initArray(memorySlots, () => new RegisterFileItemSync());
   }
-
-  getPCSync() { return this._pcSync; }
-
-  resetPCReadersCount() { this._pcSync.readersCount = 0; }
-
 
   getRegisterSync(reg: Register) {
     if (!(reg in this._registerSync)) {
@@ -85,7 +71,6 @@ export class RegisterFileSync implements PCSync, RegisterSync, MemorySync {
   }
 
   resetReadersCount() {
-    this.resetPCReadersCount();
     this.resetRegisterReadersCount();
     this.resetMemoryReadersCount();
   }

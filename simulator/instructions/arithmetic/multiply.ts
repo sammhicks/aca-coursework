@@ -18,7 +18,7 @@ export class Multiply extends ArithmeticInstruction {
 
   getWriteRequirements(sync: RegisterSync) { return [new SetsRegister(sync, this.r0)]; }
 
-  execute(rf: HasRegisters): [RegisterWriter] {
+  execute(rf: HasRegisters) {
     return [
       new RegisterWriter(
         this.r0,
