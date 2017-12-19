@@ -1,4 +1,5 @@
 import { Address, PC, Register, Literal, Registers, Memory } from "./basic-types";
+import { ExecutionResult, ExecutionResultsHandler } from "./execution-result";
 
 export const LR_INDEX = 0;
 
@@ -42,7 +43,7 @@ export interface WritableRegisterFile extends HasWritableRegisters, HasWritableM
 }
 
 
-export abstract class RegisterFile implements ReadableRegisterFile, WritableRegisterFile {
+export abstract class RegisterFile implements ReadableRegisterFile, WritableRegisterFile, ExecutionResultsHandler {
   private _registers: Registers;
   private _memory: Memory;
 
@@ -64,4 +65,9 @@ export abstract class RegisterFile implements ReadableRegisterFile, WritableRegi
   abstract halt(): void;
 
   abstract handleBranchPredictionError(pc: PC): void;
+
+  handleExecutionResults(results: ExecutionResult[]) {
+    const self = this;
+    results.forEach(result => result.consume(self));
+  }
 }

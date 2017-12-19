@@ -1,5 +1,5 @@
 import { ExecutionResult, ExecutionResultsHandler } from "./execution-result";
-import { WritableRegisterFile, HandlesBranchPredictionError } from "./register-file";
+import { WritableRegisterFile } from "./register-file";
 
 class ReservedSlot { };
 
@@ -38,12 +38,12 @@ export class ReorderBufferSlot implements ExecutionResultsHandler {
   }
 }
 
-export class ReorderBuffer implements HandlesBranchPredictionError {
+export class ReorderBuffer {
   private _rf: WritableRegisterFile;
   private _slots: ReorderBufferSlot[];
   private _aborted: boolean;
 
-  constructor(rf: WritableRegisterFile, size: number) {
+  constructor(rf: WritableRegisterFile) {
     this._rf = rf;
     this._slots = [];
     this._aborted = false;
@@ -69,7 +69,7 @@ export class ReorderBuffer implements HandlesBranchPredictionError {
     return writeBackCount;
   }
 
-  handleBranchPredictionError() {
+  reset() {
     this._slots = [];
     this._aborted = true;
   }

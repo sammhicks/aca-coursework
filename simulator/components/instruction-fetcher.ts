@@ -1,8 +1,7 @@
 import { PC } from "./basic-types";
-import { HandlesBranchPredictionError } from "./register-file";
-import { Instruction } from "../instructions/instruction"
+import { Instruction } from "../instructions/instruction";
 
-export class InstructionFetcher implements HandlesBranchPredictionError {
+export class InstructionFetcher {
   private _pc: PC;
   private _instructions: Instruction[]
 
@@ -11,12 +10,13 @@ export class InstructionFetcher implements HandlesBranchPredictionError {
     this._instructions = instructions;
   }
 
-  load() {
-    const instruction = this._instructions[this._pc];
-    this._pc = instruction.expectedPC(this._pc);
+  load(): [PC, Instruction] {
+    const pc = this._pc;
+    const instruction = this._instructions[pc];
+    this._pc = instruction.expectedPC(pc);
 
-    return instruction;
+    return [pc, instruction];
   }
 
-  handleBranchPredictionError(pc: PC) { this._pc = pc; }
+  reset(pc: PC) { this._pc = pc; }
 }

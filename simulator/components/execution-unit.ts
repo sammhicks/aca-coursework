@@ -1,10 +1,10 @@
 import { PC } from "./basic-types";
-import { ExecutionResult, RegisterWriter, MemoryWriter, ExternalAction, Halter, BranchPredictionError, ExecutionResultsHandler } from "./execution-result";
+import { ExecutionResult, RegisterWriter, RegisterReleaser, MemoryWriter, MemoryReleaser, ExternalAction, Halter, BranchPredictionError, ExecutionResultsHandler } from "./execution-result";
 import { InstructionRequirement, RegisterRequirement, MemoryRequirement } from "./instruction-requirements";
+import { HasRegisters, HasMemory, RegisterFile } from "./register-file";
 import { Instruction, DecodedInstruction, ArithmeticInstruction, MemoryInstruction, BranchInstruction, IOInstruction, MiscInstruction } from "../instructions/instruction";
-import { Countdown } from "../util/countdown";
-import { HasRegisters, HasMemory, HandlesBranchPredictionError, RegisterFile } from "./register-file";
 import { initArray } from "../util/init-array";
+import { Countdown } from "../util/countdown";
 
 class IdleUnit { }
 
@@ -14,7 +14,7 @@ class ActiveUnit<InstructionRequirements extends InstructionRequirement, DataSou
 
 type ExecutionUnitState<InstructionRequirements extends InstructionRequirement, DataSource, Result extends ExecutionResult> = IdleUnit | ActiveUnit<InstructionRequirements, DataSource, Result>;
 
-export class ExecutionUnit<InstructionRequirements extends InstructionRequirement, DataSource, Result extends ExecutionResult> extends Countdown implements HandlesBranchPredictionError {
+export class ExecutionUnit<InstructionRequirements extends InstructionRequirement, DataSource, Result extends ExecutionResult> extends Countdown {
   private _state: ExecutionUnitState<InstructionRequirements, DataSource, Result>;
 
   constructor() {
@@ -49,17 +49,16 @@ export class ExecutionUnit<InstructionRequirements extends InstructionRequiremen
   }
 
   onAborted(): void { this._state = new IdleUnit(); }
-
-  handleBranchPredictionError() { this.abort(); }
 }
 
-export class ArithmeticExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter>{ }
-export class MemoryExecutionUnit extends ExecutionUnit<RegisterRequirement | MemoryRequirement, HasRegisters | HasMemory, RegisterWriter | MemoryWriter>{ }
-export class BranchExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | BranchPredictionError>{ }
-export class IOExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | ExternalAction> { }
+export class ArithmeticExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | RegisterReleaser>{ }
+export class MemoryExecutionUnit extends ExecutionUnit<RegisterRequirement | MemoryRequirement, HasRegisters | HasMemory, RegisterWriter | RegisterReleaser | MemoryWriter | MemoryReleaser>{ }
+export class BranchExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | RegisterReleaser | BranchPredictionError>{ }
+export class IOExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | RegisterReleaser | ExternalAction> { }
 export class MiscExecutionUnit extends ExecutionUnit<never, never, Halter> { }
 
 export class ExecutionUnits {
+  private _executionUnits: Countdown[];
   private _arithmeticExecutionUnits: ArithmeticExecutionUnit[];
   private _memoryExecutionUnits: MemoryExecutionUnit[];
   private _branchExecutionUnit: BranchExecutionUnit;
@@ -72,6 +71,10 @@ export class ExecutionUnits {
     this._branchExecutionUnit = new BranchExecutionUnit();
     this._ioExecutionUnit = new IOExecutionUnit();
     this._miscExecutionUnit = new MiscExecutionUnit();
+    this._executionUnits = ([] as Countdown[])
+      .concat(this._arithmeticExecutionUnits)
+      .concat(this._memoryExecutionUnits)
+      .concat([this._branchExecutionUnit, this._ioExecutionUnit, this._miscExecutionUnit]);
   }
 
   executeInstruction(rf: RegisterFile, pc: PC, instruction: Instruction, resultsHandlers: ExecutionResultsHandler[]): boolean {
@@ -122,5 +125,10 @@ export class ExecutionUnits {
 
       return false;
     }
+    return false;
   }
+
+  tick() { this._executionUnits.forEach(unit => unit.tick()); }
+
+  resetUnits() { this._executionUnits.forEach(unit => unit.abort()); }
 }

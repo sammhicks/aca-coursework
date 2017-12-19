@@ -12,12 +12,16 @@ export class RegisterFileItemSync {
     this.futureState = new Semaphore();
     this.readersState = new BiDirectionSemaphore();
   }
+
+  reset() {
+    this.currentState.reset();
+    this.futureState.reset();
+    this.readersState.reset();
+  }
 }
 
 export interface RegisterSync {
   getRegisterSync(reg: Register): RegisterFileItemSync;
-
-  resetRegisterReadersCount(): void;
 }
 
 export type MemorySlot = number;
@@ -28,8 +32,6 @@ export interface MemorySync {
   getMemorySync(addr: Address): RegisterFileItemSync;
 
   mapMemorySyncs<T>(action: (sync: RegisterFileItemSync, slot: MemorySlot) => T): T[];
-
-  resetMemoryReadersCount(): void;
 }
 
 export class RegisterFileSync implements RegisterSync, MemorySync {
@@ -49,13 +51,6 @@ export class RegisterFileSync implements RegisterSync, MemorySync {
     return this._registerSync[reg];
   }
 
-  resetRegisterReadersCount() {
-    for (let index = 0; index < this._registerSync.length; index++) {
-      this._registerSync[index].readersState.reset();
-    }
-  }
-
-
   mapAddress(addr: Address) { return addr % this._memorySync.length; }
 
   getMemorySync(addr: Address) { return this._memorySync[this.mapAddress(addr)]; }
@@ -64,14 +59,8 @@ export class RegisterFileSync implements RegisterSync, MemorySync {
     return this._memorySync.map(action);
   }
 
-  resetMemoryReadersCount() {
-    for (let index = 0; index < this._memorySync.length; index++) {
-      this.getMemorySync(index).readersState.reset();
-    }
-  }
-
-  resetReadersCount() {
-    this.resetRegisterReadersCount();
-    this.resetMemoryReadersCount();
+  reset() {
+    this._registerSync.forEach(s => s.reset());
+    this._memorySync.forEach(s => s.reset());
   }
 }
