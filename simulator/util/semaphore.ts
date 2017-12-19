@@ -1,8 +1,7 @@
 import { Comparable, compare } from "./compare";
-import { DeepCopy } from "./deep-copy";
 
-export class Semaphore implements Comparable<Semaphore>, DeepCopy<Semaphore> {
-  private _value: number;
+export class Semaphore implements Comparable<Semaphore>{
+  protected _value: number;
 
   constructor(value: number = 0) {
     this._value = value;
@@ -11,6 +10,12 @@ export class Semaphore implements Comparable<Semaphore>, DeepCopy<Semaphore> {
   compare(other: Semaphore) { return compare(this._value, other._value); }
 
   increment() { this._value += 1; }
+}
 
-  deepCopy() { return new Semaphore(this._value); }
+export class BiDirectionSemaphore extends Semaphore {
+  decrement() { this._value -= 1; }
+
+  reset() { this._value = 0; }
+
+  isZero() { return this._value == 0; }
 }

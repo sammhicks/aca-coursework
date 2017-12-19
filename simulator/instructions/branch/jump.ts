@@ -8,9 +8,7 @@ export class Jump extends BranchInstruction {
 
   get duration() { return 1; }
 
-  getReadRequirements() { return []; }
-
-  getWriteRequirements() { return []; }
+  getRequirements() { return []; }
 
   execute() { return []; }
 

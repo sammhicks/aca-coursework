@@ -12,9 +12,7 @@ export class Branch extends BranchInstruction {
 
   get duration() { return 2; }
 
-  getReadRequirements() { return []; }
-
-  getWriteRequirements(sync: RegisterSync) { return [new SetsRegister(sync, LR_INDEX)]; }
+  getRequirements(sync: RegisterSync) { return [new SetsRegister(sync, LR_INDEX)]; }
 
   execute(rf: never, pc: PC) {
     return [

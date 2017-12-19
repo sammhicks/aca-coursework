@@ -1,6 +1,6 @@
 import { MemoryInstruction } from "../instruction";
 import { Register, Literal } from "../../components/basic-types";
-import { RegisterWriter } from "../../components/execution-result";
+import { RegisterWriter, RegisterReleaser, MemoryReleaser, registerReleasers } from "../../components/execution-result";
 import { ReadsRegister, SetsRegister, ReadsFromMemory } from "../../components/instruction-requirements"
 import { getRegisters, HasRegisters, HasMemory } from "../../components/register-file";
 import { RegisterSync, MemorySync } from "../../components/register-file-sync";
@@ -14,17 +14,18 @@ export class Load extends MemoryInstruction {
 
   get duration() { return 2; }
 
-  getReadRequirements(sync: RegisterSync & MemorySync, rf: HasRegisters & HasMemory) {
-    return (this.r12.map(r => new ReadsRegister(sync, r)) as (ReadsRegister | ReadsFromMemory)[]).concat([new ReadsFromMemory(sync, rf, this.r12, this.i3)]);
+  getRequirements(sync: RegisterSync & MemorySync, rf: HasRegisters & HasMemory) {
+    return ([] as (ReadsRegister | SetsRegister | ReadsFromMemory)[])
+      .concat([new ReadsFromMemory(sync, rf, this.r0, this.r12, this.i3)])
+      .concat([new SetsRegister(sync, this.r0)]);
   }
 
-  getWriteRequirements(sync: RegisterSync) { return [new SetsRegister(sync, this.r0)]; }
+  execute(rf: HasRegisters & HasMemory) {
+    const addr = getRegisters(rf, this.r12).reduce((acc, item) => acc + item, this.i3);
 
-  execute(rf: HasRegisters & HasMemory): [RegisterWriter] {
-    return [
-      new RegisterWriter(
-        this.r0,
-        rf.readMemory(getRegisters(rf, this.r12).reduce((acc, item) => acc + item, this.i3)))
-    ];
+    return ([] as (RegisterWriter | RegisterReleaser | MemoryReleaser)[])
+      .concat([new RegisterWriter(this.r0, rf.readMemory(addr))])
+      .concat(registerReleasers(this.r0, this.r12))
+      .concat(new MemoryReleaser(addr));
   }
 };

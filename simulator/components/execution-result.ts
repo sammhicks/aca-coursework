@@ -21,6 +21,10 @@ export class RegisterReleaser implements ExecutionResult {
   consume(rf: HasWritableRegisters) { rf.releaseRegister(this.reg) }
 }
 
+export function registerReleasers(dst: Register | null, src: (Register | null)[]): RegisterReleaser[] {
+  return (src.filter(r => (r != null && r != undefined && r != dst)) as Register[]).map(r => new RegisterReleaser(r));
+}
+
 export class MemoryWriter implements ExecutionResult {
   constructor(readonly addr: Literal, readonly val: Literal) { }
 

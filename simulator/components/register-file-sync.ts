@@ -1,16 +1,16 @@
 import { Address, Register } from "./basic-types";
 import { initArray } from "../util/init-array";
-import { Semaphore } from "../util/semaphore";
+import { Semaphore, BiDirectionSemaphore } from "../util/semaphore";
 
 export class RegisterFileItemSync {
   public currentState: Semaphore;
   public futureState: Semaphore;
-  public readersCount: number;
+  public readersState: BiDirectionSemaphore;
 
   constructor() {
-    this.currentState = new Semaphore(0);
-    this.futureState = new Semaphore(0);
-    this.readersCount = 0;
+    this.currentState = new Semaphore();
+    this.futureState = new Semaphore();
+    this.readersState = new BiDirectionSemaphore();
   }
 }
 
@@ -51,7 +51,7 @@ export class RegisterFileSync implements RegisterSync, MemorySync {
 
   resetRegisterReadersCount() {
     for (let index = 0; index < this._registerSync.length; index++) {
-      this._registerSync[index].readersCount = 0;
+      this._registerSync[index].readersState.reset();
     }
   }
 
@@ -66,7 +66,7 @@ export class RegisterFileSync implements RegisterSync, MemorySync {
 
   resetMemoryReadersCount() {
     for (let index = 0; index < this._memorySync.length; index++) {
-      this.getMemorySync(index).readersCount = 0;
+      this.getMemorySync(index).readersState.reset();
     }
   }
 

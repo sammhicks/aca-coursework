@@ -7,9 +7,7 @@ export class Halt extends MiscInstruction {
 
   get duration() { return 1; }
 
-  getReadRequirements() { return [] as never[]; }
-
-  getWriteRequirements() { return [] as never[]; }
+  getRequirements() { return []; }
 
   execute() { return [new Halter()]; }
 

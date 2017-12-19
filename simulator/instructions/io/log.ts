@@ -8,9 +8,7 @@ export class Log extends IOInstruction {
 
   get duration() { return 1; }
 
-  getReadRequirements() { return [] as never[]; }
-
-  getWriteRequirements() { return [] as never[]; }
+  getRequirements() { return []; }
 
   execute() {
     const self = this;

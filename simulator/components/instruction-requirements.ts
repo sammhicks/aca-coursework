@@ -1,5 +1,4 @@
 import { Register, Literal } from "./basic-types";
-import { ExecutionResult, RegisterReleaser, MemoryReleaser } from "./execution-result";
 import { HasRegisters, HasMemory, getRegisters } from "./register-file";
 import { RegisterFileItemSync, RegisterSync, MemorySlot, MemorySync } from "./register-file-sync";
 import { areEqual } from "../util/compare";
@@ -11,14 +10,7 @@ export interface InstructionRequirement {
   isMet(): boolean;
 }
 
-export interface ReadRequirement extends InstructionRequirement {
-  getResult(): ExecutionResult;
-}
-
-export interface WriteRequirement extends InstructionRequirement { }
-
-
-abstract class RegisterInteraction {
+export abstract class RegisterRequirement implements InstructionRequirement {
   protected _sync: RegisterFileItemSync;
   protected _target: Semaphore;
   protected _alreadyUpdatedSync: boolean;
@@ -29,21 +21,21 @@ abstract class RegisterInteraction {
     this._alreadyUpdatedSync = false;
   }
 
+  abstract updateSync(): void;
+
   isMet() { return areEqual(this._sync.currentState, this._target); }
 }
 
-export class ReadsRegister extends RegisterInteraction implements ReadRequirement {
+export class ReadsRegister extends RegisterRequirement {
   updateSync() {
     if (!this._alreadyUpdatedSync && this.isMet()) {
-      this._alreadyUpdatedSync;
-      this._sync.readersCount += 1;
+      this._alreadyUpdatedSync = true;
+      this._sync.readersState.increment();
     }
   }
-
-  getResult() { return new RegisterReleaser(this.reg); }
 }
 
-export class SetsRegister extends RegisterInteraction implements WriteRequirement {
+export class SetsRegister extends RegisterRequirement {
   updateSync() {
     if (!this._alreadyUpdatedSync) {
       this._alreadyUpdatedSync = true;
@@ -51,19 +43,26 @@ export class SetsRegister extends RegisterInteraction implements WriteRequiremen
     }
   }
 
-  isMet() { return super.isMet() && this._sync.readersCount == 0; }
+  isMet() { return super.isMet() && this._sync.readersState.isZero(); }
 }
 
-abstract class BaseMemoryRequirement {
+export function registerInteractions(sync: RegisterSync, dst: Register | null, src: (Register | null)[]): RegisterRequirement[] {
+
+  return ([] as RegisterRequirement[])
+    .concat((src.filter(r => (r != null && r != undefined && r != dst)) as Register[]).map(r => new ReadsRegister(sync, r)))
+    .concat(dst == null ? [] : [new SetsRegister(sync, dst)]);
+}
+
+export abstract class MemoryRequirement implements InstructionRequirement {
   protected _rf: HasRegisters & HasMemory;
   protected _regReqs: ReadsRegister[];
   protected _sync: MemorySync;
   protected _target: Semaphore[];
   protected _updatedSyncs: boolean[];
 
-  constructor(sync: RegisterSync & MemorySync, rf: HasRegisters & HasMemory, readonly addrRegs: Register[], readonly addrOffset: Literal) {
+  constructor(sync: RegisterSync & MemorySync, rf: HasRegisters & HasMemory, readonly dst: Register | null, readonly addrRegs: Register[], readonly addrOffset: Literal) {
     this._rf = rf;
-    this._regReqs = addrRegs.map(reg => new ReadsRegister(sync, reg));
+    this._regReqs = addrRegs.filter(r => r != dst).map(reg => new ReadsRegister(sync, reg));
     this._sync = sync;
     this._target = sync.mapMemorySyncs(sync => sync.futureState);
     this._updatedSyncs = sync.mapMemorySyncs(() => false);
@@ -73,10 +72,12 @@ abstract class BaseMemoryRequirement {
 
   protected getMemorySlot() { return this._sync.mapAddress(this.getAddress()); }
 
+  abstract updateSync(): void;
+
   isMet() { return this._regReqs.every(req => req.isMet()) && areEqual(this._sync.getMemorySync(this.getMemorySlot()).currentState, this._target[this.getMemorySlot()]); }
 }
 
-export class ReadsFromMemory extends BaseMemoryRequirement implements ReadRequirement {
+export class ReadsFromMemory extends MemoryRequirement {
   updateSync() {
     this._regReqs.forEach(req => req.updateSync());
 
@@ -87,7 +88,7 @@ export class ReadsFromMemory extends BaseMemoryRequirement implements ReadRequir
         if (self._updatedSyncs[slot]) {
           self._updatedSyncs[slot] = false;
           if (slot == self.getMemorySlot()) {
-            sync.readersCount -= 1;
+            sync.readersState.decrement();
           }
         }
       });
@@ -96,16 +97,14 @@ export class ReadsFromMemory extends BaseMemoryRequirement implements ReadRequir
       this._sync.mapMemorySyncs(function (sync: RegisterFileItemSync, slot: MemorySlot) {
         if (!self._updatedSyncs[slot] && areEqual(self._sync.getMemorySync(slot).currentState, self._target[slot])) {
           self._updatedSyncs[slot] = true;
-          sync.readersCount += 1;
+          sync.readersState.increment();
         }
       });
     }
   }
-
-  getResult() { return new MemoryReleaser(this.getAddress()); }
 }
 
-export class WritesToMemory extends BaseMemoryRequirement {
+export class WritesToMemory extends MemoryRequirement {
   updateSync() {
     this._regReqs.forEach(req => req.updateSync());
 
@@ -131,5 +130,5 @@ export class WritesToMemory extends BaseMemoryRequirement {
     }
   }
 
-  isMet() { return super.isMet() && this._sync.getMemorySync(this.getMemorySlot()).readersCount == 0; }
+  isMet() { return super.isMet() && this._sync.getMemorySync(this.getMemorySlot()).readersState.isZero(); }
 }

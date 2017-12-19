@@ -14,15 +14,14 @@ export class Random extends IOInstruction {
 
   get duration() { return 4; }
 
-  getReadRequirements() { return [] as never[]; }
-
-  getWriteRequirements(sync: RegisterSync) { return [new SetsRegister(sync, this.r0)]; }
+  getRequirements(sync: RegisterSync) { return [new SetsRegister(sync, this.r0)]; }
 
   execute(rf: HasRegisters) {
     const generatedValue = this.a1 + Math.floor(Math.random() * (this.b2 - this.a1));
 
     return [
-      new RegisterWriter(this.r0, generatedValue),
-      new ExternalAction(() => console.log("Random: ", generatedValue))];
+      new ExternalAction(() => console.log("Random: ", generatedValue)),
+      new RegisterWriter(this.r0, generatedValue)
+    ];
   }
 };

@@ -1,5 +1,5 @@
 import { ExecutionResult, ExecutionResultsHandler } from "./execution-result";
-import { WritableRegisterFile } from "./register-file";
+import { WritableRegisterFile, HandlesBranchPredictionError } from "./register-file";
 
 class ReservedSlot { };
 
@@ -38,13 +38,15 @@ export class ReorderBufferSlot implements ExecutionResultsHandler {
   }
 }
 
-export class ReorderBuffer {
+export class ReorderBuffer implements HandlesBranchPredictionError {
   private _rf: WritableRegisterFile;
   private _slots: ReorderBufferSlot[];
+  private _aborted: boolean;
 
   constructor(rf: WritableRegisterFile, size: number) {
     this._rf = rf;
     this._slots = [];
+    this._aborted = false;
   }
 
   newSlot(): ReorderBufferSlot {
@@ -57,12 +59,18 @@ export class ReorderBuffer {
 
   writeBack(): number {
     var writeBackCount = 0;
+    this._aborted = false;
 
-    while (this._slots.length > 0 && this._slots[0].writeBackIfReady(this._rf)) {
+    while (this._aborted == false && this._slots.length > 0 && this._slots[0].writeBackIfReady(this._rf)) {
       this._slots.shift();
       ++writeBackCount;
     }
 
     return writeBackCount;
+  }
+
+  handleBranchPredictionError() {
+    this._slots = [];
+    this._aborted = true;
   }
 }

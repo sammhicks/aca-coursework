@@ -42,7 +42,7 @@ export interface WritableRegisterFile extends HasWritableRegisters, HasWritableM
 }
 
 
-export class RegisterFile implements ReadableRegisterFile, WritableRegisterFile {
+export abstract class RegisterFile implements ReadableRegisterFile, WritableRegisterFile {
   private _registers: Registers;
   private _memory: Memory;
 
@@ -53,15 +53,15 @@ export class RegisterFile implements ReadableRegisterFile, WritableRegisterFile 
 
   getRegister(reg: Register) { return this._registers[reg]; }
   updateRegister(reg: Register, val: Literal) { this._registers[reg] = val; }
-  releaseRegister(reg: Register) { }
+  abstract releaseRegister(reg: Register): void;
 
   readMemory(addr: Address) { return this._memory[addr]; }
   writeMemory(addr: Address, val: Literal) { this._memory[addr] = val; }
-  releaseMemory(addr: Address) { }
+  abstract releaseMemory(addr: Address): void;
 
-  performExternalAction(action: () => void) { action(); }
+  abstract performExternalAction(action: () => void): void;
 
-  halt() { }
+  abstract halt(): void;
 
-  handleBranchPredictionError(pc: PC) { }
+  abstract handleBranchPredictionError(pc: PC): void;
 }
