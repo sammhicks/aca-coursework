@@ -1,5 +1,5 @@
 import { PC } from "./basic-types";
-import { ExecutionResult, RegisterWriter, RegisterReleaser, MemoryWriter, MemoryReleaser, ExternalAction, Halter, BranchPredictionError, ExecutionResultsHandler, TookBranch, Returned } from "./execution-result";
+import { ExecutionResult, RegisterWriter, RegisterReleaser, MemoryWriter, MemoryReleaser, ExternalAction, Halter, BranchPredictionError, ExecutionResultsHandler, TookBranch, Returned, ReturnPredictionError, BranchPredictionSuccess, ReturnPredictionSuccess } from "./execution-result";
 import { InstructionRequirement, RegisterRequirement, MemoryRequirement } from "./instruction-requirements";
 import { HasRegisters, HasMemory, RegisterFile } from "./register-file";
 import { Instruction, DecodedInstruction, ArithmeticInstruction, MemoryInstruction, BranchInstruction, IOInstruction, MiscInstruction } from "../instructions/instruction";
@@ -44,8 +44,9 @@ export class ExecutionUnit<InstructionRequirements extends InstructionRequiremen
   onCompletion(): void {
     if (this._state instanceof ActiveUnit) {
       const instructionResults = this._state.instruction.execute(this._state.rf, this._state.pc, this._state.expectedPC);
+      const duration = this._state.instruction.duration;
 
-      this._state.resultsHandlers.forEach(handler => handler.handleExecutionResults(instructionResults));
+      this._state.resultsHandlers.forEach(handler => handler.handleExecutionResults(instructionResults, duration));
 
       this._state = new IdleUnit();
     } else {
@@ -58,7 +59,7 @@ export class ExecutionUnit<InstructionRequirements extends InstructionRequiremen
 
 export class ArithmeticExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | RegisterReleaser>{ }
 export class MemoryExecutionUnit extends ExecutionUnit<RegisterRequirement | MemoryRequirement, HasRegisters | HasMemory, RegisterWriter | RegisterReleaser | MemoryWriter | MemoryReleaser>{ }
-export class BranchExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | RegisterReleaser | TookBranch | Returned | BranchPredictionError>{ }
+export class BranchExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | RegisterReleaser | TookBranch | BranchPredictionSuccess | BranchPredictionError | Returned | ReturnPredictionSuccess | ReturnPredictionError>{ }
 export class IOExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | RegisterReleaser | ExternalAction> { }
 export class MiscExecutionUnit extends ExecutionUnit<never, never, Halter> { }
 
@@ -68,20 +69,22 @@ export class ExecutionUnits {
   private _arithmeticExecutionUnits: ArithmeticExecutionUnit[];
   private _memoryExecutionUnits: MemoryExecutionUnit[];
   private _branchExecutionUnit: BranchExecutionUnit;
-  private _ioExecutionUnit: IOExecutionUnit;
+  private _ioExecutionUnits: IOExecutionUnit[];
   private _miscExecutionUnit: MiscExecutionUnit;
 
-  constructor(arithmeticExecutionUnitCount: number, memoryExecutionUnitCount: number, prediction: Prediction) {
+  constructor(arithmeticExecutionUnitCount: number, memoryExecutionUnitCount: number, ioExecutioUnitCount: number, prediction: Prediction) {
     this._prediction = prediction;
     this._arithmeticExecutionUnits = initArray(arithmeticExecutionUnitCount, () => new ArithmeticExecutionUnit());
     this._memoryExecutionUnits = initArray(memoryExecutionUnitCount, () => new MemoryExecutionUnit());
     this._branchExecutionUnit = new BranchExecutionUnit();
-    this._ioExecutionUnit = new IOExecutionUnit();
+    this._ioExecutionUnits = initArray(ioExecutioUnitCount, () => new IOExecutionUnit());
     this._miscExecutionUnit = new MiscExecutionUnit();
     this._executionUnits = ([] as Countdown[])
       .concat(this._arithmeticExecutionUnits)
       .concat(this._memoryExecutionUnits)
-      .concat([this._branchExecutionUnit, this._ioExecutionUnit, this._miscExecutionUnit]);
+      .concat([this._branchExecutionUnit])
+      .concat(this._ioExecutionUnits)
+      .concat([this._miscExecutionUnit]);
   }
 
   executeInstruction(rf: RegisterFile, pc: PC, instruction: Instruction, resultsHandlers: ExecutionResultsHandler[]): boolean {
@@ -116,10 +119,13 @@ export class ExecutionUnits {
 
       return false;
     } else if (instruction instanceof IOInstruction) {
-      if (this._ioExecutionUnit.isAvailable) {
-        this._ioExecutionUnit.executeInstruction(rf, this._prediction, pc, instruction, resultsHandlers);
+      for (let index = 0; index < this._ioExecutionUnits.length; index++) {
+        const executionUnit = this._ioExecutionUnits[index];
+        if (executionUnit.isAvailable) {
+          executionUnit.executeInstruction(rf, this._prediction, pc, instruction, resultsHandlers);
 
-        return true;
+          return true;
+        }
       }
 
       return false;

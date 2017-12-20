@@ -14,6 +14,7 @@ class ReservationStationSlot {
 
   constructor(readonly rf: RegisterFile, readonly sync: RegisterFileSync, readonly pc: PC, readonly instruction: Instruction, readonly reorderBufferSlot: ReorderBufferSlot) {
     this.instructionRequirements = instruction.getRequirements(sync, rf);
+    this.instructionRequirements.forEach(req => req.updateSync());
   }
 }
 
@@ -38,18 +39,29 @@ export class ReservationStation extends RegisterFile {
   }
 
   loadInstructions() {
-    if (this._running) {
-      while (this._slots.length < this.slotCount) {
-        const pcAndInstruction = this._instructionFetcher.load();
-        const newReorderBufferSlot = this._reorderBuffer.newSlot();
-        this._slots.push(new ReservationStationSlot(this, this._sync, pcAndInstruction[0], pcAndInstruction[1], newReorderBufferSlot));
+    while (this._running && this._slots.length < this.slotCount) {
+      const pcAndInstruction = this._instructionFetcher.load();
+      const newReorderBufferSlot = this._reorderBuffer.newSlot();
+      this._slots.push(new ReservationStationSlot(this, this._sync, pcAndInstruction[0], pcAndInstruction[1], newReorderBufferSlot));
+      if (pcAndInstruction[1].halts) {
+        this._running = false;
       }
     }
   }
 
   executeInstructions() {
     const executionUnits = this._executionUnits;
-    this._slots = this._slots.filter(slot => !executionUnits.executeInstruction(slot.rf, slot.pc, slot.instruction, [slot.reorderBufferSlot, slot.rf]));
+    this._slots = this._slots.filter(function (slot: ReservationStationSlot) {
+      slot.instructionRequirements.forEach(req => req.updateSync());
+
+      if (slot.instructionRequirements.every(req => req.isMet())) {
+        if (executionUnits.executeInstruction(slot.rf, slot.pc, slot.instruction, [slot.reorderBufferSlot, slot.rf])) {
+          return false;
+        }
+      }
+
+      return true;
+    });
   }
 
 
@@ -77,19 +89,25 @@ export class ReservationStation extends RegisterFile {
 
   halt() { this._running = false; }
 
-  handleBranchPredictionError() { this._running = false; }
-
   notifyBranchTaken(pc: PC, branchTaken: boolean) {
     if (this._running) {
       this._prediction.branchPrediction.updateValue(pc, branchTaken);
     }
   }
 
+  handleBranchPredictionSuccess() { }
+
+  handleBranchPredictionError() { this._running = false; }
+
   notifyReturn(pc: PC, ret: PC) {
     if (this._running) {
       this._prediction.returnPrediction.updateValue(pc, ret);
     }
   }
+
+  handleReturnPredictionSuccess() { }
+
+  handleReturnPredictionError() { this._running = false; }
 
   reset(regs: Registers, memory: Memory) {
     this._sync.reset();

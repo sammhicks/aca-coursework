@@ -1,6 +1,6 @@
 import { BranchInstruction } from "../instruction";
 import { PC } from "../../components/basic-types";
-import { BranchPredictionError, RegisterReleaser, Returned } from "../../components/execution-result";
+import { RegisterReleaser, Returned, ReturnPredictionSuccess, ReturnPredictionError } from "../../components/execution-result";
 import { ReadsRegister } from "../../components/instruction-requirements";
 import { LR_INDEX, HasRegisters } from "../../components/register-file";
 import { RegisterSync } from "../../components/register-file-sync";
@@ -17,9 +17,9 @@ export class Return extends BranchInstruction {
     const newPC: PC = rf.getRegister(LR_INDEX);
 
 
-    return ([] as (RegisterReleaser | BranchPredictionError | Returned)[])
+    return ([] as (RegisterReleaser | Returned | ReturnPredictionSuccess | ReturnPredictionError)[])
       .concat([new RegisterReleaser(LR_INDEX), new Returned(pc, newPC)])
-      .concat(newPC == expectedPC ? [] : [new BranchPredictionError(newPC)]);
+      .concat(newPC == expectedPC ? [new ReturnPredictionSuccess()] : [new ReturnPredictionError(newPC)]);
   }
 
   expectedPC(pc: PC, prediction: Prediction) { return prediction.returnPrediction.lookupValue(pc, pc); }

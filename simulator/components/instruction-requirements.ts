@@ -17,7 +17,7 @@ export abstract class RegisterRequirement implements InstructionRequirement {
 
   constructor(sync: RegisterSync, readonly reg: Register) {
     this._sync = sync.getRegisterSync(reg);
-    this._target = sync.getRegisterSync(reg).futureState;
+    this._target = sync.getRegisterSync(reg).futureState.clone();
     this._alreadyUpdatedSync = false;
   }
 

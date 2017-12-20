@@ -17,7 +17,7 @@ export class ValuePrediction<T>{
     } else if (this._certain) {
       this._certain = false;
     } else {
-      this.value = newValue;
+      this._value = newValue;
     }
   }
 }

@@ -35,19 +35,31 @@ export interface Halts {
   halt(): void;
 }
 
-export interface HandlesBranchPredictionError {
-  handleBranchPredictionError(pc: PC): void;
-}
-
 export interface TracksBranches {
   notifyBranchTaken(pc: PC, branchTaken: boolean): void;
+}
+
+export interface HandlesBranchPredictionSuccess {
+  handleBranchPredictionSuccess(): void;
+}
+
+export interface HandlesBranchPredictionError {
+  handleBranchPredictionError(pc: PC): void;
 }
 
 export interface TracksReturns {
   notifyReturn(pc: PC, ret: PC): void;
 }
 
-export interface WritableRegisterFile extends HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, HandlesBranchPredictionError, TracksBranches, TracksReturns {
+export interface HandlesReturnPredictionSuccess {
+  handleReturnPredictionSuccess(): void;
+}
+
+export interface HandlesReturnPredictionError {
+  handleReturnPredictionError(pc: PC): void;
+}
+
+export interface WritableRegisterFile extends HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, TracksBranches, HandlesBranchPredictionSuccess, HandlesBranchPredictionError, TracksReturns, HandlesReturnPredictionSuccess, HandlesReturnPredictionError {
 }
 
 
@@ -72,11 +84,17 @@ export abstract class RegisterFile implements ReadableRegisterFile, WritableRegi
 
   abstract halt(): void;
 
-  abstract handleBranchPredictionError(pc: PC): void;
-
   abstract notifyBranchTaken(pc: PC, branchTaken: boolean): void;
 
+  abstract handleBranchPredictionSuccess(): void;
+
+  abstract handleBranchPredictionError(pc: PC): void;
+
   abstract notifyReturn(pc: PC, ret: PC): void;
+
+  abstract handleReturnPredictionSuccess(): void;
+
+  abstract handleReturnPredictionError(pc: PC): void;
 
   handleExecutionResults(results: ExecutionResult[]) {
     const self = this;

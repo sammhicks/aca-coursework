@@ -13,5 +13,7 @@ export class Halt extends MiscInstruction {
 
   get isNonSequential() { return true; }
 
+  get halts() { return true; }
+
   expectedPC(pc: number): PC { return pc; }
 };

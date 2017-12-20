@@ -1,6 +1,6 @@
 import { BranchInstruction } from "../instruction";
 import { Literal, Register, PC } from "../../components/basic-types";
-import { BranchPredictionError, RegisterReleaser, TookBranch } from "../../components/execution-result";
+import { BranchPredictionError, RegisterReleaser, TookBranch, BranchPredictionSuccess } from "../../components/execution-result";
 import { ReadsRegister } from "../../components/instruction-requirements";
 import { HasRegisters } from "../../components/register-file";
 import { RegisterSync } from "../../components/register-file-sync";
@@ -22,16 +22,16 @@ export class ConditionalJump extends BranchInstruction {
     const conditionMatchesVariable = this.cond == rf.getRegister(this.r1);
     const branchTaken = conditionMatchesVariable != this.inv;
 
-    const newPC = pc + (branchTaken ? this.i0 : 0);
+    const newPC = pc + 1 + (branchTaken ? this.i0 : 0);
 
-    return ([] as (RegisterReleaser | BranchPredictionError | TookBranch)[])
+    return ([] as (RegisterReleaser | TookBranch | BranchPredictionSuccess | BranchPredictionError)[])
       .concat([new RegisterReleaser(this.r1), new TookBranch(pc, branchTaken)])
-      .concat(newPC == expectedPC ? [] : new BranchPredictionError(newPC));
+      .concat(newPC == expectedPC ? [new BranchPredictionSuccess()] : new BranchPredictionError(newPC));
   }
 
   expectedPC(pc: PC, prediction: Prediction) {
     const takeBranch = prediction.branchPrediction.lookupValue(pc, this.i0 < 0);
 
-    return takeBranch ? (pc + this.i0) : pc;
+    return pc + 1 + (takeBranch ? this.i0 : 0);
   }
 };

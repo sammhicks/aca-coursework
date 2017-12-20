@@ -3,66 +3,98 @@ var b
 var c
 var sum = 0
 a = 1
-b = 1
+b = 2
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 3
+b = 4
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 5
+b = 6
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 7
+b = 8
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 9
+b = 10
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 11
+b = 12
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 13
+b = 14
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 15
+b = 16
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 17
+b = 18
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 19
+b = 20
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 21
+b = 22
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 23
+b = 24
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 25
+b = 26
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 27
+b = 28
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 29
+b = 30
 c = a + b
+out c
 sum = sum + c
-a = 1
-b = 1
+out sum
+a = 31
+b = 32
 c = a + b
+out c
 sum = sum + c
+out sum

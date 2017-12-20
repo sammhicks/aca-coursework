@@ -1,5 +1,5 @@
 import { PC, Literal, Register } from "./basic-types";
-import { HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, WritableRegisterFile, HandlesBranchPredictionError, TracksBranches, TracksReturns } from "./register-file";
+import { HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, WritableRegisterFile, HandlesBranchPredictionError, TracksBranches, TracksReturns, HandlesReturnPredictionError, HandlesBranchPredictionSuccess, HandlesReturnPredictionSuccess } from "./register-file";
 
 export interface ExecutionResult {
   consume(rf: WritableRegisterFile): void;
@@ -47,16 +47,20 @@ export class Halter implements ExecutionResult {
   consume(rf: Halts) { rf.halt(); }
 }
 
-export class BranchPredictionError implements ExecutionResult {
-  constructor(readonly pc: PC) { }
-
-  consume(rf: HandlesBranchPredictionError) { rf.handleBranchPredictionError(this.pc); }
-}
-
 export class TookBranch implements ExecutionResult {
   constructor(readonly pc: PC, readonly branchTaken: boolean) { }
 
   consume(rf: TracksBranches) { rf.notifyBranchTaken(this.pc, this.branchTaken); }
+}
+
+export class BranchPredictionSuccess implements ExecutionResult {
+  consume(rf: HandlesBranchPredictionSuccess) { rf.handleBranchPredictionSuccess(); }
+}
+
+export class BranchPredictionError implements ExecutionResult {
+  constructor(readonly pc: PC) { }
+
+  consume(rf: HandlesBranchPredictionError) { rf.handleBranchPredictionError(this.pc); }
 }
 
 export class Returned implements ExecutionResult {
@@ -65,7 +69,17 @@ export class Returned implements ExecutionResult {
   consume(rf: TracksReturns) { rf.notifyReturn(this.pc, this.ret); }
 }
 
+export class ReturnPredictionSuccess implements ExecutionResult {
+  consume(rf: HandlesReturnPredictionSuccess) { rf.handleReturnPredictionSuccess(); }
+}
+
+export class ReturnPredictionError implements ExecutionResult {
+  constructor(readonly pc: PC) { }
+
+  consume(rf: HandlesReturnPredictionError) { rf.handleReturnPredictionError(this.pc); }
+}
+
 
 export interface ExecutionResultsHandler {
-  handleExecutionResults(results: ExecutionResult[]): void;
+  handleExecutionResults(results: ExecutionResult[], duration: number): void;
 }

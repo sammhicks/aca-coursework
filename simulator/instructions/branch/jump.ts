@@ -12,5 +12,5 @@ export class Jump extends BranchInstruction {
 
   execute() { return []; }
 
-  expectedPC(pc: PC): PC { return pc + this.i0; }
+  expectedPC(pc: PC): PC { return pc + 1 + this.i0; }
 };

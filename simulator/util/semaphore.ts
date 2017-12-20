@@ -7,6 +7,8 @@ export class Semaphore implements Comparable<Semaphore>{
     this._value = value;
   }
 
+  clone() { return new Semaphore(this._value); }
+
   compare(other: Semaphore) { return compare(this._value, other._value); }
 
   increment() { this._value += 1; }
