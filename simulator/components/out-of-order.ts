@@ -1,11 +1,12 @@
-import { PC, Register, Literal, Address } from "./basic-types";
+import { PC, Register, Literal, Address, Registers, Memory } from "./basic-types";
+import { ExecutionUnits } from "./execution-unit";
 import { InstructionFetcher } from "./instruction-fetcher";
+import { InstructionRequirement } from "./instruction-requirements";
 import { RegisterFile } from "./register-file";
+import { RegisterFileSync, MemorySlot } from "./register-file-sync";
 import { ReorderBufferSlot, ReorderBuffer } from "./reorder-buffer";
 import { Instruction } from "../instructions/instruction";
-import { InstructionRequirement } from "./instruction-requirements";
-import { RegisterFileSync, MemorySlot } from "./register-file-sync";
-import { ExecutionUnits } from "./execution-unit";
+import { Prediction } from "./prediction";
 
 
 class ReservationStationSlot {
@@ -18,25 +19,31 @@ class ReservationStationSlot {
 
 export class ReservationStation extends RegisterFile {
   private _instructionFetcher: InstructionFetcher
+  private _prediction: Prediction;
   private _slots: ReservationStationSlot[];
   private _sync: RegisterFileSync;
   private _executionUnits: ExecutionUnits;
   private _reorderBuffer: ReorderBuffer;
+  private _running: boolean;
 
-  constructor(readonly slotCount: number, memorySlotCount: MemorySlot, instructionFetcher: InstructionFetcher, executionUnits: ExecutionUnits, reorderBuffer: ReorderBuffer) {
+  constructor(readonly slotCount: number, memorySlotCount: MemorySlot, instructionFetcher: InstructionFetcher, prediction: Prediction, executionUnits: ExecutionUnits, reorderBuffer: ReorderBuffer) {
     super();
     this._instructionFetcher = instructionFetcher;
+    this._prediction = prediction;
     this._slots = [];
     this._sync = new RegisterFileSync(memorySlotCount);
     this._executionUnits = executionUnits;
     this._reorderBuffer = reorderBuffer;
+    this._running = true;
   }
 
   loadInstructions() {
-    while (this._slots.length < this.slotCount) {
-      const pcAndInstruction = this._instructionFetcher.load();
-      const newReorderBufferSlot = this._reorderBuffer.newSlot();
-      this._slots.push(new ReservationStationSlot(this, this._sync, pcAndInstruction[0], pcAndInstruction[1], newReorderBufferSlot));
+    if (this._running) {
+      while (this._slots.length < this.slotCount) {
+        const pcAndInstruction = this._instructionFetcher.load();
+        const newReorderBufferSlot = this._reorderBuffer.newSlot();
+        this._slots.push(new ReservationStationSlot(this, this._sync, pcAndInstruction[0], pcAndInstruction[1], newReorderBufferSlot));
+      }
     }
   }
 
@@ -68,12 +75,27 @@ export class ReservationStation extends RegisterFile {
 
   performExternalAction() { }
 
-  halt() { }
+  halt() { this._running = false; }
 
-  handleBranchPredictionError(pc: PC) { }
+  handleBranchPredictionError() { this._running = false; }
 
-  reset() {
+  notifyBranchTaken(pc: PC, branchTaken: boolean) {
+    if (this._running) {
+      this._prediction.branchPrediction.updateValue(pc, branchTaken);
+    }
+  }
+
+  notifyReturn(pc: PC, ret: PC) {
+    if (this._running) {
+      this._prediction.returnPrediction.updateValue(pc, ret);
+    }
+  }
+
+  reset(regs: Registers, memory: Memory) {
     this._sync.reset();
     this._slots = [];
+    this._registers = regs.slice();
+    this._memory = memory.slice();
+    this._running = true;
   }
 }

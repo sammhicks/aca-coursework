@@ -1,15 +1,20 @@
 import { PC } from "./basic-types";
-import { ExecutionResult, RegisterWriter, RegisterReleaser, MemoryWriter, MemoryReleaser, ExternalAction, Halter, BranchPredictionError, ExecutionResultsHandler } from "./execution-result";
+import { ExecutionResult, RegisterWriter, RegisterReleaser, MemoryWriter, MemoryReleaser, ExternalAction, Halter, BranchPredictionError, ExecutionResultsHandler, TookBranch, Returned } from "./execution-result";
 import { InstructionRequirement, RegisterRequirement, MemoryRequirement } from "./instruction-requirements";
 import { HasRegisters, HasMemory, RegisterFile } from "./register-file";
 import { Instruction, DecodedInstruction, ArithmeticInstruction, MemoryInstruction, BranchInstruction, IOInstruction, MiscInstruction } from "../instructions/instruction";
 import { initArray } from "../util/init-array";
 import { Countdown } from "../util/countdown";
+import { Prediction } from "./prediction";
 
 class IdleUnit { }
 
 class ActiveUnit<InstructionRequirements extends InstructionRequirement, DataSource, Result extends ExecutionResult> {
-  constructor(readonly rf: DataSource, readonly pc: PC, readonly instruction: DecodedInstruction<InstructionRequirements, DataSource, Result>, readonly resultsHandlers: ExecutionResultsHandler[]) { }
+  readonly expectedPC: PC;
+
+  constructor(readonly rf: DataSource, prediction: Prediction, readonly pc: PC, readonly instruction: DecodedInstruction<InstructionRequirements, DataSource, Result>, readonly resultsHandlers: ExecutionResultsHandler[]) {
+    this.expectedPC = instruction.expectedPC(pc, prediction);
+  }
 }
 
 type ExecutionUnitState<InstructionRequirements extends InstructionRequirement, DataSource, Result extends ExecutionResult> = IdleUnit | ActiveUnit<InstructionRequirements, DataSource, Result>;
@@ -27,9 +32,9 @@ export class ExecutionUnit<InstructionRequirements extends InstructionRequiremen
     return this._state instanceof IdleUnit;
   }
 
-  executeInstruction(rf: DataSource, pc: PC, instruction: DecodedInstruction<InstructionRequirements, DataSource, Result>, resultsHandlers: ExecutionResultsHandler[]) {
+  executeInstruction(rf: DataSource, prediction: Prediction, pc: PC, instruction: DecodedInstruction<InstructionRequirements, DataSource, Result>, resultsHandlers: ExecutionResultsHandler[]) {
     if (this.isAvailable) {
-      this._state = new ActiveUnit<InstructionRequirements, DataSource, Result>(rf, pc, instruction, resultsHandlers);
+      this._state = new ActiveUnit<InstructionRequirements, DataSource, Result>(rf, prediction, pc, instruction, resultsHandlers);
       this.reset(instruction.duration);
     } else {
       throw Error("Execution Unit not ready!");
@@ -38,7 +43,7 @@ export class ExecutionUnit<InstructionRequirements extends InstructionRequiremen
 
   onCompletion(): void {
     if (this._state instanceof ActiveUnit) {
-      const instructionResults = this._state.instruction.execute(this._state.rf, this._state.pc);
+      const instructionResults = this._state.instruction.execute(this._state.rf, this._state.pc, this._state.expectedPC);
 
       this._state.resultsHandlers.forEach(handler => handler.handleExecutionResults(instructionResults));
 
@@ -53,11 +58,12 @@ export class ExecutionUnit<InstructionRequirements extends InstructionRequiremen
 
 export class ArithmeticExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | RegisterReleaser>{ }
 export class MemoryExecutionUnit extends ExecutionUnit<RegisterRequirement | MemoryRequirement, HasRegisters | HasMemory, RegisterWriter | RegisterReleaser | MemoryWriter | MemoryReleaser>{ }
-export class BranchExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | RegisterReleaser | BranchPredictionError>{ }
+export class BranchExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | RegisterReleaser | TookBranch | Returned | BranchPredictionError>{ }
 export class IOExecutionUnit extends ExecutionUnit<RegisterRequirement, HasRegisters, RegisterWriter | RegisterReleaser | ExternalAction> { }
 export class MiscExecutionUnit extends ExecutionUnit<never, never, Halter> { }
 
 export class ExecutionUnits {
+  private _prediction: Prediction;
   private _executionUnits: Countdown[];
   private _arithmeticExecutionUnits: ArithmeticExecutionUnit[];
   private _memoryExecutionUnits: MemoryExecutionUnit[];
@@ -65,7 +71,8 @@ export class ExecutionUnits {
   private _ioExecutionUnit: IOExecutionUnit;
   private _miscExecutionUnit: MiscExecutionUnit;
 
-  constructor(arithmeticExecutionUnitCount: number, memoryExecutionUnitCount: number) {
+  constructor(arithmeticExecutionUnitCount: number, memoryExecutionUnitCount: number, prediction: Prediction) {
+    this._prediction = prediction;
     this._arithmeticExecutionUnits = initArray(arithmeticExecutionUnitCount, () => new ArithmeticExecutionUnit());
     this._memoryExecutionUnits = initArray(memoryExecutionUnitCount, () => new MemoryExecutionUnit());
     this._branchExecutionUnit = new BranchExecutionUnit();
@@ -82,7 +89,7 @@ export class ExecutionUnits {
       for (let index = 0; index < this._arithmeticExecutionUnits.length; index++) {
         const executionUnit = this._arithmeticExecutionUnits[index];
         if (executionUnit.isAvailable) {
-          executionUnit.executeInstruction(rf, pc, instruction, resultsHandlers);
+          executionUnit.executeInstruction(rf, this._prediction, pc, instruction, resultsHandlers);
 
           return true;
         }
@@ -93,7 +100,7 @@ export class ExecutionUnits {
       for (let index = 0; index < this._memoryExecutionUnits.length; index++) {
         const executionUnit = this._memoryExecutionUnits[index];
         if (executionUnit.isAvailable) {
-          executionUnit.executeInstruction(rf, pc, instruction, resultsHandlers);
+          executionUnit.executeInstruction(rf, this._prediction, pc, instruction, resultsHandlers);
 
           return true;
         }
@@ -102,7 +109,7 @@ export class ExecutionUnits {
       return false;
     } else if (instruction instanceof BranchInstruction) {
       if (this._branchExecutionUnit.isAvailable) {
-        this._branchExecutionUnit.executeInstruction(rf, pc, instruction, resultsHandlers);
+        this._branchExecutionUnit.executeInstruction(rf, this._prediction, pc, instruction, resultsHandlers);
 
         return true;
       }
@@ -110,7 +117,7 @@ export class ExecutionUnits {
       return false;
     } else if (instruction instanceof IOInstruction) {
       if (this._ioExecutionUnit.isAvailable) {
-        this._ioExecutionUnit.executeInstruction(rf, pc, instruction, resultsHandlers);
+        this._ioExecutionUnit.executeInstruction(rf, this._prediction, pc, instruction, resultsHandlers);
 
         return true;
       }
@@ -118,7 +125,7 @@ export class ExecutionUnits {
       return false;
     } else if (instruction instanceof MiscInstruction) {
       if (this._miscExecutionUnit.isAvailable) {
-        this._miscExecutionUnit.executeInstruction(rf as never, pc, instruction, resultsHandlers);
+        this._miscExecutionUnit.executeInstruction(rf as never, this._prediction, pc, instruction, resultsHandlers);
 
         return true;
       }

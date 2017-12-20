@@ -1,5 +1,5 @@
 import { PC, Literal, Register } from "./basic-types";
-import { HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, WritableRegisterFile, HandlesBranchPredictionError } from "./register-file";
+import { HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, WritableRegisterFile, HandlesBranchPredictionError, TracksBranches, TracksReturns } from "./register-file";
 
 export interface ExecutionResult {
   consume(rf: WritableRegisterFile): void;
@@ -51,6 +51,18 @@ export class BranchPredictionError implements ExecutionResult {
   constructor(readonly pc: PC) { }
 
   consume(rf: HandlesBranchPredictionError) { rf.handleBranchPredictionError(this.pc); }
+}
+
+export class TookBranch implements ExecutionResult {
+  constructor(readonly pc: PC, readonly branchTaken: boolean) { }
+
+  consume(rf: TracksBranches) { rf.notifyBranchTaken(this.pc, this.branchTaken); }
+}
+
+export class Returned implements ExecutionResult {
+  constructor(readonly pc: PC, readonly ret: PC) { }
+
+  consume(rf: TracksReturns) { rf.notifyReturn(this.pc, this.ret); }
 }
 
 

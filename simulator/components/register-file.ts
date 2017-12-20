@@ -39,13 +39,21 @@ export interface HandlesBranchPredictionError {
   handleBranchPredictionError(pc: PC): void;
 }
 
-export interface WritableRegisterFile extends HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, HandlesBranchPredictionError {
+export interface TracksBranches {
+  notifyBranchTaken(pc: PC, branchTaken: boolean): void;
+}
+
+export interface TracksReturns {
+  notifyReturn(pc: PC, ret: PC): void;
+}
+
+export interface WritableRegisterFile extends HasWritableRegisters, HasWritableMemory, PerformsExternalActions, Halts, HandlesBranchPredictionError, TracksBranches, TracksReturns {
 }
 
 
 export abstract class RegisterFile implements ReadableRegisterFile, WritableRegisterFile, ExecutionResultsHandler {
-  private _registers: Registers;
-  private _memory: Memory;
+  protected _registers: Registers;
+  protected _memory: Memory;
 
   constructor() {
     this._registers = [];
@@ -65,6 +73,10 @@ export abstract class RegisterFile implements ReadableRegisterFile, WritableRegi
   abstract halt(): void;
 
   abstract handleBranchPredictionError(pc: PC): void;
+
+  abstract notifyBranchTaken(pc: PC, branchTaken: boolean): void;
+
+  abstract notifyReturn(pc: PC, ret: PC): void;
 
   handleExecutionResults(results: ExecutionResult[]) {
     const self = this;

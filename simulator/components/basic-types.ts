@@ -3,10 +3,6 @@ export type PC = number;
 export type Register = number;
 export type Literal = number;
 
-export interface Registers {
-  [index: number]: Literal;
-}
+export type Registers = Literal[];
 
-export interface Memory {
-  [index: number]: Literal;
-}
+export type Memory = Literal[];

@@ -27,9 +27,7 @@ export class ReorderBufferSlot implements ExecutionResultsHandler {
 
   writeBackIfReady(rf: WritableRegisterFile): boolean {
     if (this._state instanceof CompleteSlot) {
-      for (var index = 0; index < this._state.results.length; index++) {
-        this._state.results[index].consume(rf);
-      }
+      this._state.results.forEach(r => r.consume(rf));
 
       return true;
     }

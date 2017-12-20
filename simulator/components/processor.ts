@@ -5,10 +5,12 @@ import { InstructionFetcher } from "./instruction-fetcher";
 import { Instruction } from "../instructions/instruction";
 import { ExecutionUnits } from "./execution-unit";
 import { ReorderBuffer } from "./reorder-buffer";
+import { Prediction } from "./prediction";
 
 
 export class Processor extends RegisterFile {
   private _fetcher: InstructionFetcher;
+  private _prediction: Prediction;
   private _reservationStation: ReservationStation;
   private _executionUnits: ExecutionUnits;
   private _reorderBuffer: ReorderBuffer;
@@ -20,13 +22,15 @@ export class Processor extends RegisterFile {
   constructor(reservationStationCount: number, memorySlotCount: number, arithmeticExecutionUnitCount: number, memoryExecutionUnitCount: number, instructions: Instruction[]) {
     super();
 
-    this._fetcher = new InstructionFetcher(instructions)
+    this._prediction = new Prediction();
 
-    this._executionUnits = new ExecutionUnits(arithmeticExecutionUnitCount, memoryExecutionUnitCount);
+    this._fetcher = new InstructionFetcher(instructions, this._prediction)
+
+    this._executionUnits = new ExecutionUnits(arithmeticExecutionUnitCount, memoryExecutionUnitCount, this._prediction);
 
     this._reorderBuffer = new ReorderBuffer(this);
 
-    this._reservationStation = new ReservationStation(reservationStationCount, memorySlotCount, this._fetcher, this._executionUnits, this._reorderBuffer);
+    this._reservationStation = new ReservationStation(reservationStationCount, memorySlotCount, this._fetcher, this._prediction, this._executionUnits, this._reorderBuffer);
 
     this._running = true;
     this._clockCycles = 0;
@@ -47,9 +51,17 @@ export class Processor extends RegisterFile {
 
   handleBranchPredictionError(pc: PC) {
     this._fetcher.reset(pc);
-    this._reservationStation.reset();
+    this._reservationStation.reset(this._registers, this._memory);
     this._executionUnits.resetUnits();
     this._reorderBuffer.reset();
+  }
+
+  notifyBranchTaken(pc: PC, branchTaken: boolean) {
+    this._prediction.branchPrediction.updateValue(pc, branchTaken);
+  }
+
+  notifyReturn(pc: PC, ret: PC) {
+    this._prediction.returnPrediction.updateValue(pc, ret);
   }
 
   run() {
