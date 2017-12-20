@@ -16,10 +16,11 @@ export class Return extends BranchInstruction {
   execute(rf: HasRegisters, pc: PC, expectedPC: PC) {
     const newPC: PC = rf.getRegister(LR_INDEX);
 
-
-    return ([] as (RegisterReleaser | Returned | ReturnPredictionSuccess | ReturnPredictionError)[])
-      .concat([new RegisterReleaser(LR_INDEX), new Returned(pc, newPC)])
-      .concat(newPC == expectedPC ? [new ReturnPredictionSuccess()] : [new ReturnPredictionError(newPC)]);
+    return [
+      new RegisterReleaser(LR_INDEX),
+      new Returned(pc, newPC),
+      newPC == expectedPC ? new ReturnPredictionSuccess() : new ReturnPredictionError(newPC)
+    ];
   }
 
   expectedPC(pc: PC, prediction: Prediction) { return prediction.returnPrediction.lookupValue(pc, pc); }

@@ -24,9 +24,11 @@ export class ConditionalJump extends BranchInstruction {
 
     const newPC = pc + 1 + (branchTaken ? this.i0 : 0);
 
-    return ([] as (RegisterReleaser | TookBranch | BranchPredictionSuccess | BranchPredictionError)[])
-      .concat([new RegisterReleaser(this.r1), new TookBranch(pc, branchTaken)])
-      .concat(newPC == expectedPC ? [new BranchPredictionSuccess()] : new BranchPredictionError(newPC));
+    return [
+      new RegisterReleaser(this.r1),
+      new TookBranch(pc, branchTaken),
+      newPC == expectedPC ? new BranchPredictionSuccess() : new BranchPredictionError(newPC)
+    ];
   }
 
   expectedPC(pc: PC, prediction: Prediction) {

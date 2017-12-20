@@ -29,13 +29,7 @@ export class PredictedValues<T> {
     this._predictions = {};
   }
 
-  lookupValue(index: number, valueIfMissing: T) {
-    if (!(index in this._predictions)) {
-      this._predictions[index] = new ValuePrediction(valueIfMissing);
-    }
-
-    return this._predictions[index].value;
-  }
+  lookupValue(index: number, valueIfMissing: T) { return (index in this._predictions) ? this._predictions[index].value : valueIfMissing; }
 
   updateValue(index: number, value: T) {
     if (index in this._predictions) {
