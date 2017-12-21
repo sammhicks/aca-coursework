@@ -14,11 +14,7 @@ export class Branch extends BranchInstruction {
 
   getRequirements(sync: RegisterSync) { return [new SetsRegister(sync, LR_INDEX)]; }
 
-  execute(rf: never, pc: PC) {
-    return [
-      new RegisterWriter(LR_INDEX, pc)
-    ];
-  }
+  execute(rf: never, pc: PC) { return [new RegisterWriter(LR_INDEX, pc + 1)]; }
 
   expectedPC(pc: PC): PC { return this.i0; }
 };
