@@ -7,7 +7,7 @@
       "name": "Launch Program",
       "program": "${workspaceRoot}/index.js",
       "args": [
-        "feature-tests/if.json"
+        "benchmarks/dot_product.json"
       ]
     }
   ]

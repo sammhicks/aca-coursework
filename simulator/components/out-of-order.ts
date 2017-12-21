@@ -56,6 +56,7 @@ export class ReservationStation extends RegisterFile {
 
       if (slot.instructionRequirements.every(req => req.isMet())) {
         if (executionUnits.executeInstruction(slot.rf, slot.pc, slot.instruction, [slot.reorderBufferSlot, slot.rf])) {
+          slot.instructionRequirements.forEach(req => req.releaseUnused());
           return false;
         }
       }

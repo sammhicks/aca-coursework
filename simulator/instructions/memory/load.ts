@@ -1,7 +1,7 @@
 import { MemoryInstruction } from "../instruction";
 import { Register, Literal } from "../../components/basic-types";
 import { RegisterWriter, RegisterReleaser, MemoryReleaser, registerReleasers } from "../../components/execution-result";
-import { ReadsRegister, SetsRegister, ReadsFromMemory } from "../../components/instruction-requirements"
+import { SetsRegister, ReadsFromMemory } from "../../components/instruction-requirements"
 import { getRegisters, HasRegisters, HasMemory } from "../../components/register-file";
 import { RegisterSync, MemorySync } from "../../components/register-file-sync";
 
@@ -15,9 +15,7 @@ export class Load extends MemoryInstruction {
   get duration() { return 2; }
 
   getRequirements(sync: RegisterSync & MemorySync, rf: HasRegisters & HasMemory) {
-    return ([] as (ReadsRegister | SetsRegister | ReadsFromMemory)[])
-      .concat([new ReadsFromMemory(sync, rf, this.r0, this.r12, this.i3)])
-      .concat([new SetsRegister(sync, this.r0)]);
+    return [new SetsRegister(sync, this.r0), new ReadsFromMemory(sync, rf, this.r0, this.r12, this.i3)];
   }
 
   execute(rf: HasRegisters & HasMemory) {

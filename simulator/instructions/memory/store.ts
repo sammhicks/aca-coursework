@@ -24,8 +24,8 @@ export class Store extends MemoryInstruction {
     const addr = getRegisters(rf, this.r12).reduce((acc, item) => acc + item, this.i3);
 
     return ([] as (RegisterReleaser | MemoryWriter)[])
-      .concat(new MemoryWriter(addr, rf.getRegister(this.r0)))
       .concat((this.r0 in this.r12) ? [] : [new RegisterReleaser(this.r0)])
-      .concat(this.r12.map(r => new RegisterReleaser(r)));
+      .concat(this.r12.map(r => new RegisterReleaser(r)))
+      .concat([new MemoryWriter(addr, rf.getRegister(this.r0))]);
   }
 };

@@ -8,6 +8,8 @@ export interface InstructionRequirement {
   updateSync(): void;
 
   isMet(): boolean;
+
+  releaseUnused(): void;
 }
 
 export abstract class RegisterRequirement implements InstructionRequirement {
@@ -24,6 +26,8 @@ export abstract class RegisterRequirement implements InstructionRequirement {
   abstract updateSync(): void;
 
   isMet() { return areEqual(this._sync.currentState, this._target); }
+
+  releaseUnused() { }
 }
 
 export class ReadsRegister extends RegisterRequirement {
@@ -64,7 +68,7 @@ export abstract class MemoryRequirement implements InstructionRequirement {
     this._rf = rf;
     this._regReqs = addrRegs.filter(r => r != dst).map(reg => new ReadsRegister(sync, reg));
     this._sync = sync;
-    this._target = sync.mapMemorySyncs(sync => sync.futureState);
+    this._target = sync.mapMemorySyncs(sync => sync.futureState.clone());
     this._updatedSyncs = sync.mapMemorySyncs(() => false);
   }
 
@@ -75,6 +79,8 @@ export abstract class MemoryRequirement implements InstructionRequirement {
   abstract updateSync(): void;
 
   isMet() { return this._regReqs.every(req => req.isMet()) && areEqual(this._sync.getMemorySync(this.getMemorySlot()).currentState, this._target[this.getMemorySlot()]); }
+
+  abstract releaseUnused(): void;
 }
 
 export class ReadsFromMemory extends MemoryRequirement {
@@ -85,19 +91,41 @@ export class ReadsFromMemory extends MemoryRequirement {
     if (this._regReqs.every(sync => sync.isMet())) {
       const self = this;
       this._sync.mapMemorySyncs(function (sync: RegisterFileItemSync, slot: MemorySlot) {
-        if (self._updatedSyncs[slot]) {
-          self._updatedSyncs[slot] = false;
-          if (slot == self.getMemorySlot()) {
-            sync.readersState.decrement();
+        if (slot == self.getMemorySlot()) {
+          // Increment the used memory slot reader
+          if (!self._updatedSyncs[slot] && areEqual(sync.currentState, self._target[slot])) {
+            self._updatedSyncs[slot] = true;
+            sync.readersState.increment();
           }
         }
       });
     } else {
       const self = this;
       this._sync.mapMemorySyncs(function (sync: RegisterFileItemSync, slot: MemorySlot) {
-        if (!self._updatedSyncs[slot] && areEqual(self._sync.getMemorySync(slot).currentState, self._target[slot])) {
+        if (!self._updatedSyncs[slot] && areEqual(sync.currentState, self._target[slot])) {
           self._updatedSyncs[slot] = true;
           sync.readersState.increment();
+        }
+      });
+    }
+  }
+
+  releaseUnused() {
+    this._regReqs.forEach(req => req.releaseUnused());
+
+    // If we know what the address is
+    if (this._regReqs.every(sync => sync.isMet())) {
+      const self = this;
+      this._sync.mapMemorySyncs(function (sync: RegisterFileItemSync, slot: MemorySlot) {
+        if (slot != self.getMemorySlot()) {
+          // If we've incremented the reader, decrement it
+          if (self._updatedSyncs[slot]) {
+            if (!areEqual(sync.currentState, self._target[slot])) {
+              throw Error("Memory Read gone wrong!");
+            }
+            self._updatedSyncs[slot] = false;
+            sync.readersState.decrement();
+          }
         }
       });
     }
@@ -112,10 +140,10 @@ export class WritesToMemory extends MemoryRequirement {
     if (this._regReqs.every(sync => sync.isMet())) {
       const self = this;
       this._sync.mapMemorySyncs(function (sync: RegisterFileItemSync, slot: MemorySlot) {
-        if (self._updatedSyncs[slot]) {
-          self._updatedSyncs[slot] = false;
-          if (slot != self.getMemorySlot()) {
-            sync.currentState.increment();
+        if (slot == self.getMemorySlot()) {
+          if (!self._updatedSyncs[slot]) {
+            self._updatedSyncs[slot] = true;
+            sync.futureState.increment();
           }
         }
       });
@@ -131,4 +159,21 @@ export class WritesToMemory extends MemoryRequirement {
   }
 
   isMet() { return super.isMet() && this._sync.getMemorySync(this.getMemorySlot()).readersState.isZero(); }
+
+  releaseUnused() {
+    this._regReqs.forEach(req => req.releaseUnused());
+
+    // If we know what the address is
+    if (this._regReqs.every(sync => sync.isMet())) {
+      const self = this;
+      this._sync.mapMemorySyncs(function (sync: RegisterFileItemSync, slot: MemorySlot) {
+        if (slot != self.getMemorySlot()) {
+          if (self._updatedSyncs[slot]) {
+            self._updatedSyncs[slot] = false;
+            sync.currentState.increment();
+          }
+        }
+      });
+    }
+  }
 }

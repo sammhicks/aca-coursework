@@ -115,4 +115,7 @@ export class Processor extends RegisterFile {
   get returnPredictionSuccesses() { return this._returnPredictionSuccesses; }
   get returnPredictionFailures() { return this._returnPredictionFailures; }
   get returnPredictionEfficiency() { return this.returnPredictionSuccesses / (this.returnPredictionSuccesses + this.returnPredictionFailures); }
+
+  get registers() { return this._registers.slice(); }
+  get memory() { return this._memory.slice(); }
 }
