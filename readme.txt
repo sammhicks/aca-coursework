@@ -20,16 +20,6 @@ Examples can be found in the benchmarks and feature-tests folders
 
 
 
-If you want to edit the scripts or write your own, the compiler, written in Prolog, is found in the compiler folder
+If you want to edit the scripts or write your own, the compiler, written in Prolog, is found in the compiler folder.
 
-To compile scripts:
-
-  cd compiler
-
-  swipl compiler.pl
-
-Inside the terminal:
-
-  compile_all.
-
-This should compile all scripts in the benchmarks and feature-tests folders
+To compiler the scripts, run "make scripts" from the root directory
