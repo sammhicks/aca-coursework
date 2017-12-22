@@ -1,14 +1,14 @@
-var numItems = 200
-var as[200]
-var bs[200]
-var sum[200]
+var numItems = 240
+var as[240]
+var pad1[191]
+var bs[240]
+var pad2[199]
+var sum[240]
 
-log as
 for {var i = 0} ; {var cmp = i <> numItems; cmp<} ; {i = i + 1} {
   as[i] = [1,5)
 }
 
-log bs
 for {var i = 0} ; {var cmp = i <> numItems; cmp<} ; {i = i + 1} {
   bs[i] = [1,5)
 }
@@ -19,5 +19,3 @@ for {var i = 0} ; {var cmp = i <> numItems; cmp<} ; {i = i + 1} {
   var s = a + b
   sum[i] = s
 }
-
-out sum

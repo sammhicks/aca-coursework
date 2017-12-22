@@ -1,10 +1,18 @@
 import { BranchInstruction } from "../instruction";
 import { Literal, Register, PC } from "../../components/basic-types";
-import { BranchPredictionError, RegisterReleaser, TookBranch, BranchPredictionSuccess } from "../../components/execution-result";
+import { BranchPredictionSuccess, BranchPredictionError, RegisterReleaser, TookBranch } from "../../components/execution-result";
 import { ReadsRegister } from "../../components/instruction-requirements";
 import { HasRegisters } from "../../components/register-file";
 import { RegisterSync } from "../../components/register-file-sync";
 import { Prediction } from "../../components/prediction";
+
+enum BranchPredictionTypes {
+  None,
+  Static,
+  Dynamic
+};
+
+const branchPredictionType: BranchPredictionTypes = BranchPredictionTypes.Dynamic;
 
 export class ConditionalJump extends BranchInstruction {
   readonly i0: Literal;
@@ -27,12 +35,15 @@ export class ConditionalJump extends BranchInstruction {
     return [
       new RegisterReleaser(this.r1),
       new TookBranch(pc, branchTaken),
-      newPC == expectedPC ? new BranchPredictionSuccess() : new BranchPredictionError(newPC)
+      ((branchPredictionType != BranchPredictionTypes.None) && (newPC == expectedPC)) ? new BranchPredictionSuccess() : new BranchPredictionError(newPC)
     ];
   }
 
   expectedPC(pc: PC, prediction: Prediction) {
-    const takeBranch = prediction.branchPrediction.lookupValue(pc, this.i0 < 0);
+    const staticGuess = this.i0 < 0;
+    const dynamicGuess = prediction.branchPrediction.lookupValue(pc, staticGuess);
+
+    const takeBranch = (branchPredictionType == BranchPredictionTypes.Static) ? staticGuess : dynamicGuess;
 
     return pc + 1 + (takeBranch ? this.i0 : 0);
   }

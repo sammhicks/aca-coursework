@@ -18,6 +18,7 @@
   "homepage": "https://github.com/sammhicks/aca-coursework#readme",
   "dependencies": {
     "@types/node": "^8.0.47",
+    "package.json": "^2.0.1",
     "typescript": "^2.5.3"
   }
 }

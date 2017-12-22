@@ -1,5 +1,5 @@
-var numItems = 50
-var items[50]
+var numItems = 200
+var items[200]
 
 for {var i = 0} ; {var atEnd = i <> numItems; atEnd<} ; {i = i + 1} {
   items[i] = [0,100)

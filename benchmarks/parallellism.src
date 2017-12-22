@@ -1,0 +1,309 @@
+var a
+var b
+var c
+var d
+var e
+var f
+var g
+var h
+
+var ab
+var cd
+var ef
+var gh
+
+var abcd
+var efgh
+var abcdefgh
+
+var sum = 0
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+a = [1, 10)
+b = [1, 10)
+c = [1, 10)
+d = [1, 10)
+e = [1, 10)
+f = [1, 10)
+g = [1, 10)
+h = [1, 10)
+
+ab = a + b
+cd = c + d
+ef = e + f
+gh = g + h
+abcd = ab + cd
+efgh = ef + gh
+abcdefgh = abcd + efgh
+sum = sum + abcdefgh
+
+out sum
